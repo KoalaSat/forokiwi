@@ -1,0 +1,51 @@
+version: '3.4'
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '80:80'
+      - '443:443'
+    restart: always
+    depends_on:
+      - nostr
+      - uptime_kuma
+    volumes:
+      - ./nginx/conf/:/etc/nginx/conf.d/:ro
+      - /var/www/certbot:/var/www/certbot/:ro
+      - /etc/letsencrypt/:/etc/nginx/ssl/:ro
+    networks:
+      - nginx
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+  certbot:
+    image: certbot/certbot:latest
+    restart: always
+    volumes:
+      - /var/www/certbot/:/var/www/certbot/:rw
+      - /etc/letsencrypt/:/etc/letsencrypt/:rw
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+  nostr:
+    image: dockurr/strfry:0.9.6
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    volumes:
+      - ./strfry/db:/app/strfry-db
+      - ./strfry/config/strfry.conf:/etc/strfry.conf:ro
+    networks:
+      - nginx
+  uptime_kuma:
+    image: louislam/uptime-kuma
+    restart: always
+    ports:
+      - 3001:3001
+    volumes:
+      - ./uptimekuma/data:/app/data:rw
+    networks:
+      - nginx
+networks:
+  nginx:
+    driver: bridge
+    external: true

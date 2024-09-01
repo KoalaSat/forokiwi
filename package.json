@@ -1,0 +1,156 @@
+{
+  "name": "satstralia-web",
+  "description": "",
+  "version": "1.2.6",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KoalaSat/satstralia-web.git"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.x"
+  },
+  "bugs": {
+    "url": "https://github.com/KoalaSat/satstralia-web/issues"
+  },
+  "main": "template.json",
+  "files": [
+    "template",
+    "template.json"
+  ],
+  "keywords": [
+    "react",
+    "typescript",
+    "nostr",
+    "desentralized"
+  ],
+  "scripts": {
+    "// ---DEFAULT CRA---": "",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "// ---TEMPLATE---": "Scripts will be also in the template",
+    "start:prod": "yarn run build && serve -s build",
+    "eslint": "eslint --ext js,ts,tsx",
+    "lint": "yarn run eslint src",
+    "lint:fix": "yarn run eslint --fix src",
+    "lint:css": "stylelint src/**/*.css",
+    "prettify": "prettier --write",
+    "extract-messages": "i18next-scanner --config=internals/extractMessages/i18next-scanner.config.js",
+    "format": "eslint --fix '**/**/*.{ts,tsx}' && prettier --write '**/**/*.{ts,tsx,css,md,json}' --config ./.prettierrc",
+    "// ---BUILDING TEMPLATE---": "",
+    "create:npm-package": "ts-node ./internals/scripts/create-npm-package.script.ts",
+    "create:cra-app": "ts-node ./internals/scripts/create-cra-app.script.ts"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "yarn run eslint --fix"
+    ],
+    "*.{md,json}": [
+      "prettier --write"
+    ]
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!src/**/*/*.d.ts",
+      "!src/**/*/Loadable.{js,jsx,ts,tsx}",
+      "!src/**/*/messages.ts",
+      "!src/**/*/types.ts",
+      "!src/index.tsx"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 90,
+        "functions": 90,
+        "lines": 90,
+        "statements": 90
+      }
+    }
+  },
+  "dependencies": {
+    "@ant-design/icons": "5.0.1",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^6.0.0",
+    "@mui/material": "^6.0.0",
+    "@nostr-dev-kit/ndk": "^2.10.0",
+    "antd": "5.20.3",
+    "axios": "^1.6.7",
+    "date-fns": "^3.6.0",
+    "i18next": "21.9.2",
+    "i18next-browser-languagedetector": "6.1.5",
+    "node-polyfill-webpack-plugin": "2.0.1",
+    "react": "18.2.0",
+    "react-app-polyfill": "3.0.0",
+    "react-app-rewired": "2.2.1",
+    "react-device-detect": "^2.2.3",
+    "react-dom": "18.2.0",
+    "react-draft-wysiwyg": "^1.15.0",
+    "react-helmet-async": "1.3.0",
+    "react-i18next": "11.18.6",
+    "react-is": "18.2.0",
+    "react-markdown": "^9.0.1",
+    "react-router-dom": "6.3.0",
+    "remark-gfm": "^4.0.0",
+    "sanitize.css": "13.0.0",
+    "styled-components": "5.3.5"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@commitlint/cli": "17.1.2",
+    "@commitlint/config-conventional": "17.1.0",
+    "@testing-library/jest-dom": "5.16.5",
+    "@testing-library/react": "13.4.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^14.18.27",
+    "@types/react": "^18.0.20",
+    "@types/react-dom": "^18.0.6",
+    "@types/react-test-renderer": "^18.0.0",
+    "@types/styled-components": "^5.1.26",
+    "@types/testing-library__jest-dom": "^5.14.5",
+    "@types/webpack": "^5.28.0",
+    "@types/webpack-env": "^1.18.0",
+    "cross-env": "7.0.3",
+    "devmoji": "2.3.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-config-standard-with-typescript": "^24.0.0",
+    "eslint-import-resolver-typescript": "^3.5.3",
+    "eslint-plugin-i18next": "^6.0.0-6",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.6.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "eslint-plugin-promise": "^6.1.0",
+    "eslint-plugin-react": "^7.31.11",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "gh-pages": "5.0.0",
+    "i18next-scanner": "4.0.0",
+    "jest-styled-components": "7.1.1",
+    "lint-staged": "13.0.3",
+    "prettier": "2.7.1",
+    "react-scripts": "5.0.1",
+    "react-test-renderer": "18.2.0",
+    "replace-in-file": "6.3.5",
+    "serve": "14.0.1",
+    "standard-version": "9.5.0",
+    "stylelint": "14.12.0",
+    "stylelint-config-recommended": "9.0.0",
+    "stylelint-config-styled-components": "0.1.1",
+    "stylelint-processor-styled-components": "1.10.0",
+    "ts-jest": "27.1.5",
+    "ts-node": "10.9.1",
+    "typescript": "^5.5.4"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

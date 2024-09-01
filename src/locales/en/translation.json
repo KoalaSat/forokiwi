@@ -1,0 +1,93 @@
+{
+  "pages": {
+    "externalForumList": {
+      "title": "Explore forums"
+    },
+    "newTopic": {
+      "title": "Title",
+      "content": "Content",
+      "createTopic": "Create topic"
+    },
+    "topic": {
+      "quote": "Quote",
+      "reply": "Reply",
+      "removeReply": "Remove reply",
+      "createComment": "Comment"
+    },
+    "forum": {
+      "hotRopics": "Hot topics",
+      "createTopic": "New topic",
+      "table": {
+        "posted": "Updated"
+      }
+    },
+    "forums": {
+      "myForums": "My forums",
+      "searchForum": "Explore forums",
+      "list": {
+        "test": {
+          "name": "Test",
+          "description": "Want to test the thing?"
+        },
+        "all": {
+          "name": "All",
+          "description": "No filters. No limits."
+        },
+        "general": {
+          "name": "General",
+          "description": "Everything is welcomed."
+        },
+        "electronitcs": {
+          "name": "Electronics / Software",
+          "description": "Technology: video, audo, hardware, sofware..."
+        },
+        "videogames": {
+          "name": "Videogames",
+          "description": "PC, consoles and streamings."
+        },
+        "business": {
+          "name": "Business",
+          "description": "Work, business and entrepreneurs."
+        },
+        "travels": {
+          "name": "Travels",
+          "description": "For travelers."
+        },
+        "sports": {
+          "name": "Sports",
+          "description": "News and debates."
+        },
+        "finances": {
+          "name": "Finances",
+          "description": "Broken money, stocks, trading and others."
+        },
+        "bitcoin": {
+          "name": "Bitcoin",
+          "description": "There is no second best."
+        }
+      },
+      "createModal": {
+        "title": "Create your forum",
+        "name": "Name",
+        "namePlaceholder": "How others will identify your forum",
+        "description": "Description",
+        "descriptionPlaceholder": "What your forum is about",
+        "create": "Create"
+      }
+    }
+  },
+  "components": {
+    "mainHeader": {
+      "description": "Decentralized forums"
+    }
+  },
+  "shared": {
+    "previous": "Previous",
+    "next": "Next",
+    "commingSoon": "Comming soon!",
+    "events": {
+      "published_at": "Posted {{date}}",
+      "anonymous": "Unknown"
+    }
+  }
+}
