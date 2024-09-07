@@ -27,4 +27,5 @@ yarn-error.log*
 
 # data
 strfry/db/*
+tor/config/*
 
