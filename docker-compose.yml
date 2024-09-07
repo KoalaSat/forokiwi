@@ -36,15 +36,6 @@ services:
       - ./strfry/config/strfry.conf:/etc/strfry.conf:ro
     networks:
       - nginx
-  uptime_kuma:
-    image: louislam/uptime-kuma
-    restart: always
-    ports:
-      - 3001:3001
-    volumes:
-      - ./uptimekuma/data:/app/data:rw
-    networks:
-      - nginx
 networks:
   nginx:
     driver: bridge
