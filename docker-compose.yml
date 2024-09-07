@@ -11,7 +11,6 @@ services:
     restart: always
     depends_on:
       - nostr
-      - uptime_kuma
     volumes:
       - ./nginx/conf/:/etc/nginx/conf.d/:ro
       - /var/www/certbot:/var/www/certbot/:ro
@@ -34,6 +33,15 @@ services:
     volumes:
       - ./strfry/db:/app/strfry-db
       - ./strfry/config/strfry.conf:/etc/strfry.conf:ro
+    networks:
+      - nginx
+  tor:
+    build: ./tor
+    container_name: tor
+    restart: always
+    volumes:
+      - ./tor/config:/var/lib/tor
+      - ./tor/torrc:/etc/tor/torrc
     networks:
       - nginx
 networks:
