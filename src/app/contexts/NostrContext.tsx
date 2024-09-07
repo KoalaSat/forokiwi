@@ -27,7 +27,7 @@ export interface UseNostrStoreType {
 
 export const initialNostrContext: UseNostrStoreType = {
   ndk: new NDK({
-    explicitRelayUrls: ["wss://nostr.foro.kiwi"],
+    explicitRelayUrls: ["wss://offchain.pub", "wss://nos.lol", "wss://nostr.foro.kiwi"],
     clientName: 'https://foro.kiwi'
   }),
   authors: {},
