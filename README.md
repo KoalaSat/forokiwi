@@ -1,6 +1,6 @@
-# satstralia-web
+# forokiwi
 
-http://satstralia.com
+https://foro.kiwi
 
 ## Production Setup
 

@@ -8,6 +8,7 @@ import { NDKEvent, NDKFilter } from "@nostr-dev-kit/ndk";
 import { UseNostrStoreType, NostrContext } from "app/contexts/NostrContext";
 import { useTranslation } from "react-i18next";
 import { ActiveUser } from "app/components/ActiveUser";
+import { UseAppStoreType, AppContext } from "app/contexts/AppContext";
 
 const { Text, Title } = Typography;
 
@@ -17,6 +18,7 @@ export const ExternalForumList: () => JSX.Element = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+  const { turtleMode } = useContext<UseAppStoreType>(AppContext);
   const { ndk, saveForums } = useContext<UseNostrStoreType>(NostrContext);
   const skeletonList = useMemo(() => new Array(10).fill(new NDKEvent()), [])
   const [externalForums, setExternalForums] = useState<NDKEvent[]>();
@@ -28,12 +30,11 @@ export const ExternalForumList: () => JSX.Element = () => {
     {
       dataIndex: 'read',
       width: 10,
-      render: (_text, record, i) => <Avatar src={record.tagValue('image')} icon={<PeopleAltIcon style={{ fontSize: '20px' }} />} />
+      render: (_text, record, i) => <Avatar src={turtleMode ? undefined : record.tagValue('image')} icon={<PeopleAltIcon style={{ fontSize: '20px' }} />} />
     },
     {
       dataIndex: 'content',
       render: (_text, record, i) => {
-        console.log(record)
         return (
           <Col span={24}>
             <Skeleton active loading={!record.id} paragraph={{ rows: 1, width: 300, style: { margin: 0, marginTop: -5 } }} title={{ style: { marginTop: 0 } }}>
@@ -44,7 +45,7 @@ export const ExternalForumList: () => JSX.Element = () => {
                   </Row>
                   <Row>
                     <Col span={24}>
-                      <Text type="secondary">{record?.tagValue("description") ?? ""}</Text>
+                      <Text type="secondary">{record?.tagValue("description") === "" ? "-" : record?.tagValue("description") ?? "-"}</Text>
                     </Col>
                   </Row>
                 </Col>
@@ -91,7 +92,7 @@ export const ExternalForumList: () => JSX.Element = () => {
   return (
     <Content>
       <Row justify='space-between'>
-        <Col span='16'>
+        <Col xs={24} md={16}>
           <Row gutter={[0, 10]} >
             <Col span={24}>
               <Row>
@@ -139,8 +140,8 @@ export const ExternalForumList: () => JSX.Element = () => {
             </Col>
           </Row>
         </Col>
-        <Col span='7'>
-          <Row gutter={[0, 10]} >
+        <Col xs={0} md={7}>
+          <Row gutter={[0, 10]} style={{ marginTop: 32 }}>
             <Col span={24}>
               <ActiveUser />
             </Col>

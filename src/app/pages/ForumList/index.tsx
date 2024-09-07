@@ -29,7 +29,7 @@ export const ForumList: () => JSX.Element = () => {
   const { t } = useTranslation()
   const navigate = useNavigate();
   const {
-    token: { colorBgContainer, borderRadiusLG },
+    token: { colorBgContainer, borderRadiusLG, colorPrimary },
   } = theme.useToken();
   const [list] = useState<ListItem[]>([
     {
@@ -87,7 +87,7 @@ export const ForumList: () => JSX.Element = () => {
   return (
     <Content>
       <Row justify='space-between'>
-        <Col span='16'>
+        <Col xs={24} md={16}>
           <Row gutter={[0, 10]} >
             <Col span={24}>
               <Row>
@@ -110,15 +110,15 @@ export const ForumList: () => JSX.Element = () => {
                 dataSource={list}
                 renderItem={(item: ListItem) => (
                   <List.Item onClick={() => navigate(`/forum/${item.naddr}`)} style={{ cursor: 'pointer' }}>
-                    <Col span={2}>
-                      <Row justify='space-around'>
-                        {item.icon && <item.icon style={{ fontSize: '25px', color: '#08c' }} />}
-                        {item.svg && <img src={`/assets/${item.svg}.svg`} alt={t(`pages.forums.list.${item.name}.name`)} style={{ height: 25, width: 25 }} />}
-                      </Row>
-                    </Col>
                     <Col span={22}>
                       <Row justify='start'>
-                        <Col span={24}>
+                        <Col style={{ minWidth: 60 }}>
+                          <Row justify='space-around'>
+                            {item.icon && <item.icon style={{ fontSize: '25px', color: colorPrimary }} />}
+                            {item.svg && <img src={`/assets/${item.svg}.svg`} alt={t(`pages.forums.list.${item.name}.name`)} style={{ height: 25, width: 25 }} />}
+                          </Row>
+                        </Col>
+                        <Col>
                           <Row>
                             <Text strong>{t(`pages.forums.list.${item.name}.name`)}</Text>
                           </Row>
@@ -134,8 +134,8 @@ export const ForumList: () => JSX.Element = () => {
             </Layout>
           </Row>
         </Col>
-        <Col span='7'>
-          <Row gutter={[0, 10]} >
+        <Col xs={0} md={7}>
+          <Row gutter={[0, 10]} style={{ marginTop: 32 }} >
             <Col span={24}>
               <ActiveUser />
             </Col>

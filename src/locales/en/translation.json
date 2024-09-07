@@ -1,5 +1,9 @@
 {
   "pages": {
+    "notFound": {
+      "title": "Page not found",
+      "goMain": "Go to main page"
+    },
     "externalForumList": {
       "title": "Explore forums"
     },
@@ -17,6 +21,8 @@
     "forum": {
       "hotRopics": "Hot topics",
       "createTopic": "New topic",
+      "moderators": "Moderators",
+      "noModerators": "This community is not moderated",
       "table": {
         "posted": "Updated"
       }
@@ -38,8 +44,8 @@
           "description": "Everything is welcomed."
         },
         "electronitcs": {
-          "name": "Electronics / Software",
-          "description": "Technology: video, audo, hardware, sofware..."
+          "name": "Technology",
+          "description": "Electronics and Software."
         },
         "videogames": {
           "name": "Videogames",
@@ -59,7 +65,7 @@
         },
         "finances": {
           "name": "Finances",
-          "description": "Broken money, stocks, trading and others."
+          "description": "Broken money, stocks, trading..."
         },
         "bitcoin": {
           "name": "Bitcoin",
@@ -78,7 +84,14 @@
   },
   "components": {
     "mainHeader": {
-      "description": "Decentralized forums"
+      "description": "Decentralized forums",
+      "turtleMode": "Active turtle mode when your conection is limited."
+    },
+    "markDown": {
+      "identifier": "Go to topic: {{identifier}}"
+    },
+    "activeUser": {
+      "createUser": "Create user"
     }
   },
   "shared": {

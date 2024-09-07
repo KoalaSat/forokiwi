@@ -14,10 +14,12 @@ import { Markdown } from "app/components/Markdown";
 import TextArea from "antd/es/input/TextArea";
 import { ActiveUser } from "app/components/ActiveUser";
 import { ForumsButtons } from "app/components/ForumsButtons";
+import { AppContext, UseAppStoreType } from "app/contexts/AppContext";
 
-const { Title, Text } = Typography;
+const { Title, Text, Link } = Typography;
 
 export const Topic: () => JSX.Element = () => {
+  const { turtleMode } = useContext<UseAppStoreType>(AppContext);
   const { ndk, authors, saveAuthors, reactions, saveReactions, comments, saveComments, topics, saveTopics, forums, saveForums } = useContext<UseNostrStoreType>(NostrContext);
   const { naddr } = useParams();
   const navigate = useNavigate();
@@ -56,7 +58,7 @@ export const Topic: () => JSX.Element = () => {
               const fEvent = [...e][0]
               if (fEvent) {
                 setForumEvent(fEvent)
-                saveForums({[fEvent.encode()]: fEvent, [mainDTag]: fEvent})
+                saveForums({ [fEvent.encode()]: fEvent, [mainDTag]: fEvent })
               } else {
                 setForumEvent(new NDKEvent())
               }
@@ -70,13 +72,19 @@ export const Topic: () => JSX.Element = () => {
       })
       const filters = filterForEventsTaggingId(naddr)
       const dTag = filters?.['#a']?.[0].split(':')[2]
+
+      const kinds = [1]
+      if (!turtleMode) kinds.push(7)
+
       if (dTag) {
-        ndk.fetchEvents({ ...filters, kinds: [1, 7] }).then((eventsList) => {
+        ndk.fetchEvents({ ...filters, kinds }).then((eventsList) => {
           const commList: NDKEvent[] = []
           const reactList: NDKEvent[] = []
           eventsList.forEach((event) => {
             switch (event.kind) {
               case 1:
+                console.log(event.pubkey)
+                console.log(event)
                 commList.push(event)
                 break;
               case 7:
@@ -174,7 +182,7 @@ export const Topic: () => JSX.Element = () => {
   return (
     <Content>
       <Row justify='space-between'>
-        <Col span='16'>
+        <Col xs={24} md={16}>
           <Row gutter={[0, 10]} >
             <Col span={24}>
               <Row>
@@ -224,7 +232,9 @@ export const Topic: () => JSX.Element = () => {
                           <Col span={24}>
                             <Row justify='space-between'>
                               <Skeleton active loading={!rootAuthor === undefined} paragraph={{ rows: 1, width: 100 }} style={{ marginTop: -10, marginBottom: -9, width: 100 }} title={false}>
-                                <Text strong>{rootAuthor?.displayName ?? rootAuthor?.name ?? t("shared.events.anonymous")}</Text>
+                                <Link strong href={`https://njump.me/${topicEvent?.author.npub}`} target="_blank">
+                                  {rootAuthor?.displayName ?? rootAuthor?.name ?? t("shared.events.anonymous")}
+                                </Link>
                               </Skeleton>
                               <Skeleton active loading={!topicEvent} paragraph={{ rows: 1, width: 100 }} style={{ marginTop: -10, marginBottom: -9, width: 100 }} title={false}>
                                 <Text strong>{t("shared.events.published_at", { date: formatDistanceToNow(fromUnixTime(parseInt(topicEvent?.tagValue("published_at") ?? topicEvent?.created_at?.toString() ?? "0", 10)), { addSuffix: true }) })}</Text>
@@ -246,23 +256,25 @@ export const Topic: () => JSX.Element = () => {
                     <Row>
                       <Col span={24}>
                         <Row justify="end">
-                          <Col style={{ width: 63, marginRight: 16 }}>
-                            <Text type="secondary">
-                              <Skeleton active loading={!reactions?.[topicEvent?.dTag ?? ''] && loadingReactions} paragraph={{ rows: 1, width: 55 }} title={false}>
-                                <Row justify="space-between">
-                                  <Button
-                                    icon={
-                                      <FavoriteIcon color={reactions?.[topicEvent?.dTag ?? '']?.find(reaction => reaction.pubkey === ndk.activeUser?.pubkey) ? 'error' : 'inherit'} />
-                                    }
-                                    loading={liking}
-                                    onClick={() => likeTopicEvent()}
-                                  >
-                                    {reactions?.[topicEvent?.dTag ?? '']?.length ?? 0}
-                                  </Button>
-                                </Row>
-                              </Skeleton>
-                            </Text>
-                          </Col>
+                          {!turtleMode && (
+                            <Col style={{ width: 63, marginRight: 16 }}>
+                              <Text type="secondary">
+                                <Skeleton active loading={!reactions?.[topicEvent?.dTag ?? ''] && loadingReactions} paragraph={{ rows: 1, width: 55 }} title={false}>
+                                  <Row justify="space-between">
+                                    <Button
+                                      icon={
+                                        <FavoriteIcon color={reactions?.[topicEvent?.dTag ?? '']?.find(reaction => reaction.pubkey === ndk.activeUser?.pubkey) ? 'error' : 'inherit'} />
+                                      }
+                                      loading={liking}
+                                      onClick={() => likeTopicEvent()}
+                                    >
+                                      {reactions?.[topicEvent?.dTag ?? '']?.length ?? 0}
+                                    </Button>
+                                  </Row>
+                                </Skeleton>
+                              </Text>
+                            </Col>
+                          )}
                           <Col style={{ width: 63, marginLeft: 16 }}>
                             <Text type="secondary">
                               <Skeleton active loading={!comments?.[topicEvent?.dTag ?? ''] && loadingComments} paragraph={{ rows: 1, width: 55 }} title={false}>
@@ -313,7 +325,9 @@ export const Topic: () => JSX.Element = () => {
                                     <Col span={24}>
                                       <Row justify='space-between'>
                                         <Skeleton active loading={author === undefined && loadingAuthors} paragraph={{ rows: 1, width: 100 }} style={{ marginTop: -10, marginBottom: -9, width: 100 }} title={false}>
-                                          <Text strong>{name}</Text>
+                                          <Link strong href={`https://njump.me/${comment?.author.npub}`} target="_blank">
+                                            {name}
+                                          </Link>
                                         </Skeleton>
                                         <Text strong>{t("shared.events.published_at", { date: formatDistanceToNow(fromUnixTime(comment.created_at ?? 0), { addSuffix: true }) })}</Text>
                                       </Row>
@@ -331,12 +345,12 @@ export const Topic: () => JSX.Element = () => {
                                     <Layout style={{ background: colorBgLayout, padding: 25, marginBottom: 10, borderLeftColor: colorTextSecondary, borderLeftWidth: 5, borderLeftStyle: 'solid' }}>
                                       <Row>
                                         <Col>
-                                          <Markdown text={reply.content} loadingAuthors={loadingAuthors} />
+                                          <Markdown text={reply.content} loadingAuthors={loadingAuthors} dTag={topicEvent?.dTag?.toString()} />
                                         </Col>
                                       </Row>
                                     </Layout>
                                   )}
-                                  <Markdown text={comment.content ?? ''} loadingAuthors={loadingAuthors} />
+                                  <Markdown text={comment.content ?? ''} loadingAuthors={loadingAuthors} dTag={topicEvent?.dTag?.toString()} />
                                 </Col>
                               </Row>
                             </Col>
@@ -359,7 +373,7 @@ export const Topic: () => JSX.Element = () => {
                         <Layout style={{ background: colorBgLayout, padding: 25, marginBottom: 10, borderLeftColor: colorTextSecondary, borderLeftWidth: 5, borderLeftStyle: 'solid' }}>
                           <Row>
                             <Col>
-                              <Markdown text={replyTo.content} loadingAuthors={loadingAuthors} />
+                              <Markdown text={replyTo.content} loadingAuthors={loadingAuthors} dTag={topicEvent?.dTag} />
                             </Col>
                           </Row>
                           <Row justify="end">
@@ -388,7 +402,7 @@ export const Topic: () => JSX.Element = () => {
             </Col>
           </Row>
         </Col>
-        <Col span='7'>
+        <Col xs={0} md={7}>
           <Row gutter={[0, 10]} >
             <Col span={24}>
               <ActiveUser />

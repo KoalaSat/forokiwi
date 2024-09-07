@@ -27,7 +27,8 @@ export interface UseNostrStoreType {
 
 export const initialNostrContext: UseNostrStoreType = {
   ndk: new NDK({
-    explicitRelayUrls: ["wss://offchain.pub", "wss://nos.lol", "wss://nostr.satstralia.com"],
+    explicitRelayUrls: ["wss://offchain.pub", "wss://nos.lol", "wss://nostr.satstralia.com", "wss://nostr.foro.kiwi"],
+    clientName: 'https://foro.kiwi'
   }),
   authors: {},
   saveAuthors: () => { },
@@ -45,12 +46,12 @@ export const NostrContext = createContext<UseNostrStoreType>(initialNostrContext
 
 export const NostrContextProvider = ({ children }: NostrContextProviderProps): JSX.Element => {
   const [ndk] = useState<NDK>(initialNostrContext.ndk);
-  const [authors, setAuthors] = useState<Record<string, NDKUserProfile>>(JSON.parse(window.localStorage.getItem('authors') ?? '{}'))
+  const [authors, setAuthors] = useState<Record<string, NDKUserProfile>>(JSON.parse(window.sessionStorage.getItem('authors') ?? '{}'))
   const [forums, setForums] = useState<Record<string, NDKEvent>>({})
   const [topics, setTopics] = useState<Record<string, NDKEvent>>({})
   const [comments, setComments] = useState<Record<string, NDKEvent[]>>({})
   const [reactions, setReactions] = useState<Record<string, NDKEvent[]>>({})
-  const [userProfile, setUserProfile] = useState<NDKUserProfile | null>()
+  const [userProfile, setUserProfile] = useState<NDKUserProfile | null>(window.sessionStorage.getItem('profile') ? JSON.parse(window.sessionStorage.getItem('profile') ?? '{}') : undefined)
 
   useEffect(() => {
     const signer = new NDKNip07Signer()
@@ -60,9 +61,15 @@ export const NostrContextProvider = ({ children }: NostrContextProviderProps): J
       ndk.activeUser?.fetchProfile().then((u) => {
         if (u) {
           setUserProfile(u)
+          window.sessionStorage.setItem('profile', JSON.stringify(u));
         } else {
           setUserProfile(null)
         }
+      })
+    }).catch(() => {
+      ndk.signer = undefined
+      ndk.connect().then(() => {
+        setUserProfile(null)
       })
     });
   }, [])

@@ -1,11 +1,13 @@
 import { NDKUser, filterFromId } from "@nostr-dev-kit/ndk";
-import { Skeleton, Typography, Image, Col, Layout, Row, theme } from "antd";
+import { Skeleton, Typography, Image, Col, Layout, Row, theme, Button } from "antd";
 import { UseNostrStoreType, NostrContext } from "app/contexts/NostrContext";
 import { useContext } from "react";
 import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { visit } from 'unist-util-visit';
+import { nip19 } from 'nostr-tools'
+import { useNavigate } from "react-router-dom";
 
 const { Link } = Typography;
 
@@ -21,6 +23,7 @@ export const Markdown: React.FC<MarkdownProps> = ({ text, dTag, loadingAuthors }
   } = theme.useToken();
   const { authors, comments } = useContext<UseNostrStoreType>(NostrContext);
   const { t } = useTranslation()
+  const navigate = useNavigate();
   const markdownComponent = {
     a: props => {
       return <Link target="_blank" href={props.href}>{props.children}</Link>
@@ -33,39 +36,16 @@ export const Markdown: React.FC<MarkdownProps> = ({ text, dTag, loadingAuthors }
     },
   }
 
-  const extractMatchesWithPositions = (text, regexp): string[] => {
-    const matches = text.match(regexp);
-    const result: string[] = [];
-    let lastIndex = 0;
-
-    if (!matches) return [text];
-
-    for (const match of matches) {
-      const matchIndex = text.indexOf(match, lastIndex);
-      if (matchIndex > lastIndex) {
-        result.push(text.slice(lastIndex, matchIndex));
-      }
-      result.push(match);
-      lastIndex = matchIndex + match.length;
-    }
-
-    if (lastIndex < text.length) {
-      result.push(text.slice(lastIndex));
-    }
-
-    return result;
-  }
-
-  const mentionComponent = (index: number, npub: string): JSX.Element => {
+  const mentionComponent = (npub: string): JSX.Element => {
     const user = new NDKUser({ npub })
     const profile = authors?.[user.pubkey] ?? user?.profile
     const name: string = profile?.displayName ?? profile?.name ?? t("shared.events.anonymous")
     return loadingAuthors ?
       <Skeleton.Input size="small" active />
-      : <Link target="_blank" href='/' key={index}>{name}</Link>
+      : <Link strong href={`https://njump.me/${npub}`} target="_blank">{name}</Link>
   }
 
-  const eventComponent = (index: number, nevent: string): JSX.Element => {
+  const eventComponent = (nevent: string): JSX.Element => {
     let eventText
     if (dTag) {
       const eventId = filterFromId(nevent)?.['#e']?.[0]
@@ -84,58 +64,54 @@ export const Markdown: React.FC<MarkdownProps> = ({ text, dTag, loadingAuthors }
     )
   }
 
-  const mentionSyntax = (): (tree: any) => void => {
+  const topicComponent = (naddr: string, identifier: string): JSX.Element => {
+    if (!identifier || identifier === dTag) return <></>
+    return (
+      <Row>
+        <Col>
+          <Button type="link" onClick={() => navigate(`/topic/${naddr}`)}>
+            {t('components.markDown.identifier', { identifier })}
+          </Button>
+        </Col>
+      </Row>
+    )
+  }
+
+  const applyComponent = (type: string, bech32: string): JSX.Element => {
+    if (type === 'npub') {
+      return mentionComponent(bech32)
+    } else if (type === 'nevent') {
+      return eventComponent(bech32)
+    } else if (type === 'naddr') {
+      const ref = nip19.decode(bech32)
+      // @ts-expect-error
+      if (ref.data.kind === 30023) {
+        // @ts-expect-error
+        return topicComponent(bech32, ref.data.identifier)
+      } else {
+        return eventComponent(bech32)
+      }
+    } else {
+      return <></>
+    }
+  }
+
+
+  const nostrSyntax = (): (tree: any) => void => {
     return (tree) => {
       visit(tree, 'text', (node) => {
-        const regex = /nostr:npub1[a-z0-9]{32,}/g
-        const parts = extractMatchesWithPositions(node.value, regex);
-
-        if (parts.length > 1) {
-          node.type = 'root'; // Change the node type to root to allow multiple children
+        const regex = /nostr:((naddr|nevent|npub|)[a-zA-Z0-9]+)/g
+        const match = regex.exec(node.value)
+        if (match) {
+          node.type = 'root';
           node.children = []
-
-          parts.forEach((part, index) => {
-            if (index % 2 === 1) {
-              // This is the matched custom syntax part
-              node.children.push({
-                type: 'custom', // Custom node type
-                value: mentionComponent(index, part.replace("nostr:", "")), // The content inside the custom syntax
-              });
-            } else if (part) {
-              node.children.push({
-                type: 'text',
-                value: part,
-              });
-            }
+          node.children.push({
+            type: 'custom',
+            value: applyComponent(match[2], match[1]),
           });
-        }
-      });
-    };
-  };
-
-  const eventSyntax = (): (tree: any) => void => {
-    return (tree) => {
-      visit(tree, 'text', (node) => {
-        const regex = /nostr:nevent[a-z0-9]{31,}/g
-        const parts = extractMatchesWithPositions(node.value, regex);
-
-        if (parts.length > 1) {
-          node.type = 'root'; // Change the node type to root to allow multiple children
-          node.children = []
-
-          parts.forEach((part, index) => {
-            if (index % 2 === 1) {
-              // This is the matched custom syntax part
-              node.children.push({
-                type: 'custom', // Custom node type
-                value: eventComponent(index, part.replace("nostr:", "")), // The content inside the custom syntax
-              });
-            } else if (part) {
-              node.children.push({
-                type: 'text',
-                value: part,
-              });
-            }
+          node.children.push({
+            type: 'text',
+            value: node.value.replace(match[0], ""),
           });
         }
       });
@@ -146,11 +122,11 @@ export const Markdown: React.FC<MarkdownProps> = ({ text, dTag, loadingAuthors }
     return text.replace(/<img\s+src="([^"]+)"\s*[^>]*>/g, (match, src) => {
       const altText = 'Image';
       return `![${altText}](${src})`;
-  });
+    });
   }
 
   return (
-    <ReactMarkdown remarkPlugins={[remarkGfm, mentionSyntax, eventSyntax]} className={"markdown-container"} components={markdownComponent}>
+    <ReactMarkdown remarkPlugins={[remarkGfm, nostrSyntax]} className={"markdown-container"} components={markdownComponent}>
       {parseHTML()}
     </ReactMarkdown>
   )

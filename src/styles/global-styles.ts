@@ -1,9 +1,14 @@
 import { createGlobalStyle } from 'styled-components'
 
 export const GlobalStyle = createGlobalStyle`
+  @font-face {
+    font-family: Ubuntu;
+    src: url(/assets/fonts/Ubuntu-Title.ttf)
+  }
+
   body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    background-color: #FFF;
+    background-color: #f5f5f5;
   }
 
   #root {

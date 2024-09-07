@@ -1,11 +1,15 @@
-import { Button, Modal, Row, Typography } from "antd";
+import { Button, Col, Modal, Row, Typography } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 const { Text } = Typography;
 
-export const ForumsButtons: () => JSX.Element = () => {
+interface ForumsButtonsProps {
+  onClick?: () => void
+}
+
+export const ForumsButtons: React.FC<ForumsButtonsProps> = ({ onClick = () => {} }) => {
   const { t } = useTranslation()
   const navigate = useNavigate();
   const [openCreateForum, setOpenCreateForum] = useState(false);
@@ -31,7 +35,14 @@ export const ForumsButtons: () => JSX.Element = () => {
       <Button type="primary" block size="large" onClick={() => setOpenCreateForum(true)}>
         <Text strong>{t(`pages.forums.myForums`)}</Text>
       </Button>
-      <Button block size="large" onClick={() => navigate('/forums')}>
+      <Button 
+        block 
+        size="large" 
+        onClick={() => {
+          onClick()
+          navigate('/forums')
+        }}
+      >
         <Text strong>{t(`pages.forums.searchForum`)}</Text>
       </Button>
       <Modal
@@ -43,7 +54,15 @@ export const ForumsButtons: () => JSX.Element = () => {
         width={1000}
         footer={null}
       >
-        <Text strong>{t(`shared.commingSoon`)}</Text>
+        <Row>
+          <Col span={24}>
+            <Row justify="center">
+              <Button type="dashed" size="large">
+                {t(`shared.commingSoon`)}
+              </Button>
+            </Row>
+          </Col>
+        </Row>
       </Modal>
     </Row>
   )
