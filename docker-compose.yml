@@ -41,7 +41,7 @@ services:
     restart: always
     volumes:
       - ./tor/config:/var/lib/tor
-      - ./tor/torrc:/etc/tor/torrc
+      - ./tor/torrc:/etc/tor
     networks:
       - nginx
 networks:
