@@ -9,8 +9,6 @@ services:
       - '80:80'
       - '443:443'
     restart: always
-    depends_on:
-      - nostr
     volumes:
       - ./nginx/conf/:/etc/nginx/conf.d/:ro
       - /var/www/certbot:/var/www/certbot/:ro
