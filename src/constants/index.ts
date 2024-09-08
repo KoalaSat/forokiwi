@@ -1,8 +1,47 @@
-export const onionUrl = 'http://satstraoq35jffvkgpfoqld32nzw2siuvowanruindbfojowpwsjdgad.onion'
-export const onionUrlTest = 'http://testraliar7xkhos2gipv2k65obykofb4jqzl5l4danfryacifi4t7qd.onion'
-export const unsafeUrl = 'https://unsafe.satstralia.com/'
-export const learnUrl = 'https://learn.robosats.com/'
-export const email = 'info@satstralia.com'
-export const nostrPubKey = 'npub1z94lxjf7m5snda0qc6s3kmpy6r4nfw74h78da9j6j4y8ym08zrrs459wpr'
-export const nostrRelay = 'wss://nostr.satstralia.com'
-export const nodePubKey = '029c5b14214ca7c1f5334db539dbab266088ba43a40563551efb9458756a94cd94'
+export const languages: Array<{ value: string, label: string }> = [
+    { value: "en-US", label: "english" },
+    { value: "en-GB", label: "english" },
+    { value: "es-ES", label: "spanish" },
+    { value: "es-MX", label: "spanish" },
+    { value: "fr-FR", label: "french" },
+    { value: "fr-CA", label: "french" },
+    { value: "de-DE", label: "german" },
+    { value: "zh-CN", label: "chinese" },
+    { value: "zh-TW", label: "chinese" },
+    { value: "ja-JP", label: "japanese" },
+    { value: "ru-RU", label: "russian" },
+    { value: "pt-PT", label: "portuguese" },
+    { value: "pt-BR", label: "portuguese" },
+    { value: "hi-IN", label: "hindi" },
+    { value: "ar-SA", label: "arabic" },
+    { value: "bn-BD", label: "bengali" },
+    { value: "pa-IN", label: "punjabi" },
+    { value: "it-IT", label: "italian" },
+    { value: "ko-KR", label: "korean" },
+    { value: "tr-TR", label: "turkish" },
+    { value: "vi-VN", label: "vietnamese" },
+    { value: "th-TH", label: "thai" },
+    { value: "nl-NL", label: "dutch" },
+    { value: "sv-SE", label: "swedish" },
+    { value: "da-DK", label: "danish" },
+    { value: "fi-FI", label: "finnish" },
+    { value: "no-NO", label: "norwegian" },
+    { value: "el-GR", label: "greek" },
+    { value: "hu-HU", label: "hungarian" },
+    { value: "he-IL", label: "hebrew" },
+    { value: "cs-CZ", label: "czech" },
+    { value: "ro-RO", label: "romanian" },
+    { value: "sk-SK", label: "slovak" },
+    { value: "sl-SI", label: "slovenian" },
+    { value: "bg-BG", label: "bulgarian" },
+    { value: "uk-UA", label: "ukrainian" },
+    { value: "lt-LT", label: "lithuanian" },
+    { value: "lv-LV", label: "latvian" },
+    { value: "et-EE", label: "estonian" },
+    { value: "is-IS", label: "icelandic" },
+    { value: "mt-MT", label: "maltese" },
+    { value: "ms-MY", label: "malay" },
+    { value: "sw-KE", label: "swahili" },
+    { value: "tl-PH", label: "filipino" },
+    { value: "zu-ZA", label: "zulu" }
+]

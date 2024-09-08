@@ -88,7 +88,8 @@
       "turtleMode": "Active turtle mode when your conection is limited."
     },
     "markDown": {
-      "identifier": "Go to topic: {{identifier}}"
+      "identifier": "Go to topic: {{identifier}}",
+      "code": "Code"
     },
     "activeUser": {
       "createUser": "Create user"
@@ -97,10 +98,53 @@
   "shared": {
     "previous": "Previous",
     "next": "Next",
+    "all": "All",
     "commingSoon": "Comming soon!",
     "events": {
       "published_at": "Posted {{date}}",
       "anonymous": "Unknown"
     }
+  },
+  "language": {
+    "english": "English",
+    "spanish": "Spanish",
+    "french": "French",
+    "german": "German",
+    "chinese": "Chinese",
+    "japanese": "Japanese",
+    "russian": "Russian",
+    "portuguese": "Portuguese",
+    "hindi": "Hindi",
+    "arabic": "Arabic",
+    "bengali": "Bengali",
+    "punjabi": "Punjabi",
+    "italian": "Italian",
+    "korean": "Korean",
+    "turkish": "Turkish",
+    "vietnamese": "Vietnamese",
+    "thai": "Thai",
+    "dutch": "Dutch",
+    "swedish": "Swedish",
+    "danish": "Danish",
+    "finnish": "Finnish",
+    "norwegian": "Norwegian",
+    "greek": "Greek",
+    "hungarian": "Hungarian",
+    "hebrew": "Hebrew",
+    "czech": "Czech",
+    "romanian": "Romanian",
+    "slovak": "Slovak",
+    "slovenian": "Slovenian",
+    "bulgarian": "Bulgarian",
+    "ukrainian": "Ukrainian",
+    "lithuanian": "Lithuanian",
+    "latvian": "Latvian",
+    "estonian": "Estonian",
+    "icelandic": "Icelandic",
+    "maltese": "Maltese",
+    "malay": "Malay",
+    "swahili": "Swahili",
+    "filipino": "Filipino",
+    "zulu": "Zulu"
   }
 }

@@ -1,4 +1,4 @@
-import { NDKEvent, NDKUserProfile, filterForEventsTaggingId, profileFromEvent } from "@nostr-dev-kit/ndk";
+import { NDKEvent, NDKRelaySet, NDKUserProfile, filterForEventsTaggingId, profileFromEvent } from "@nostr-dev-kit/ndk";
 import PersonIcon from '@mui/icons-material/Person';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import SmsIcon from '@mui/icons-material/Sms';
@@ -15,12 +15,13 @@ import TextArea from "antd/es/input/TextArea";
 import { ActiveUser } from "app/components/ActiveUser";
 import { ForumsButtons } from "app/components/ForumsButtons";
 import { AppContext, UseAppStoreType } from "app/contexts/AppContext";
+import { nip19 } from "nostr-tools";
 
 const { Title, Text, Link } = Typography;
 
 export const Topic: () => JSX.Element = () => {
   const { turtleMode } = useContext<UseAppStoreType>(AppContext);
-  const { ndk, authors, saveAuthors, reactions, saveReactions, comments, saveComments, topics, saveTopics, forums, saveForums } = useContext<UseNostrStoreType>(NostrContext);
+  const { ndk, authors, saveAuthors, reactions, saveReactions, comments, saveComments, topics, saveTopics, forums, saveForums, getBaseRelays } = useContext<UseNostrStoreType>(NostrContext);
   const { naddr } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation()
@@ -46,7 +47,7 @@ export const Topic: () => JSX.Element = () => {
         setTopicEvent(topics[naddr])
         if (authors[pubkey]) setRootAuthor(authors[pubkey])
       }
-      ndk.fetchEvent(naddr, { closeOnEose: true }).then((event) => {
+      ndk.fetchEvent(naddr, { closeOnEose: true }, getForumRelaySet()).then((event) => {
         if (event) {
           setTopicEvent(event)
           if (event.dTag) saveTopics({ [event.dTag]: event })
@@ -54,7 +55,7 @@ export const Topic: () => JSX.Element = () => {
           const mainDTag = mainReference?.[1].split(':')?.[2]
           if (mainDTag) {
             if (forums[mainDTag]) setForumEvent(forums[mainDTag])
-            ndk.fetchEvents({ '#d': [mainDTag] }, { closeOnEose: true }).then((e) => {
+            ndk.fetchEvents({ '#d': [mainDTag] }, { closeOnEose: true }, getForumRelaySet()).then((e) => {
               const fEvent = [...e][0]
               if (fEvent) {
                 setForumEvent(fEvent)
@@ -77,14 +78,12 @@ export const Topic: () => JSX.Element = () => {
       if (!turtleMode) kinds.push(7)
 
       if (dTag) {
-        ndk.fetchEvents({ ...filters, kinds }).then((eventsList) => {
+        ndk.fetchEvents({ ...filters, kinds }, {}, getForumRelaySet()).then((eventsList) => {
           const commList: NDKEvent[] = []
           const reactList: NDKEvent[] = []
           eventsList.forEach((event) => {
             switch (event.kind) {
               case 1:
-                console.log(event.pubkey)
-                console.log(event)
                 commList.push(event)
                 break;
               case 7:
@@ -95,7 +94,7 @@ export const Topic: () => JSX.Element = () => {
             }
           })
           ndk
-            .fetchEvents({ kinds: [0], authors: commList.map((c) => c.pubkey) }, { closeOnEose: true })
+            .fetchEvents({ kinds: [0], authors: commList.map((c) => c.pubkey) }, { closeOnEose: true }, getForumRelaySet())
             .then((eventsList) => {
               const list = {}
               eventsList.forEach((event) => {
@@ -124,7 +123,7 @@ export const Topic: () => JSX.Element = () => {
         setLoadingAuthors(true)
         const list = [...topicEvent.getMatchingTags("p").map(t => t[1]), topicEvent.pubkey]
         ndk
-          .fetchEvents({ kinds: [0], authors: list }, { closeOnEose: true })
+          .fetchEvents({ kinds: [0], authors: list }, { closeOnEose: true }, getForumRelaySet())
           .then((eventsList) => {
             const list = {}
             eventsList.forEach((event) => {
@@ -154,6 +153,21 @@ export const Topic: () => JSX.Element = () => {
     }
   }
 
+  const getForumRelaySet = (): NDKRelaySet => {
+    let relays: string[] = getBaseRelays()
+
+    if (forumEvent){
+      forumEvent.onRelays.forEach(r => relays.push(r.url))
+    }
+    if (naddr) {
+      const ref = nip19.decode(naddr)
+      // @ts-expect-error
+      relays = [...relays, ...ref.data?.relays ?? []]
+    }
+
+    return NDKRelaySet.fromRelayUrls(relays, ndk, true)
+  }
+
   const createComment = async (): Promise<void> => {
     const dTag = topicEvent?.dTag
     if (topicEvent && dTag && naddr && content && content !== '') {
@@ -168,7 +182,7 @@ export const Topic: () => JSX.Element = () => {
       if (replyTo) replyTo.referenceTags().forEach((t) => newComment.tags.push(t))
 
       newComment
-        .publish()
+        .publish(getForumRelaySet())
         .then((result) => {
           if (result) {
             saveComments({ [dTag]: [newComment] })

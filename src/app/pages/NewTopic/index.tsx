@@ -1,4 +1,4 @@
-import { Breadcrumb, Button, Col, Input, Row, Skeleton, Typography, theme } from "antd";
+import { Breadcrumb, Button, Col, Input, Row, Select, Skeleton, Typography, theme } from "antd";
 import Layout, { Content } from "antd/es/layout/layout"
 import { useTranslation } from "react-i18next";
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
@@ -6,14 +6,19 @@ import { useNavigate, useParams } from "react-router-dom";
 import TextArea from "antd/es/input/TextArea";
 import { useContext, useEffect, useState } from "react";
 import { UseNostrStoreType, NostrContext } from "app/contexts/NostrContext";
-import { NDKEvent, filterForEventsTaggingId } from "@nostr-dev-kit/ndk";
+import { NDKEvent, NDKRelaySet, filterForEventsTaggingId } from "@nostr-dev-kit/ndk";
 import { getUnixTime } from "date-fns";
 import { ActiveUser } from "app/components/ActiveUser";
+import { nip19 } from "nostr-tools";
+import { AppContext, UseAppStoreType } from "app/contexts/AppContext";
+import ReactCountryFlag from "react-country-flag";
+import { languages } from "../../../constants";
 
 const { Title } = Typography;
 
 export const NewTopic: () => JSX.Element = () => {
-  const { ndk, saveTopics, forums, saveForums } = useContext<UseNostrStoreType>(NostrContext);
+  const { language, setLanguage } = useContext<UseAppStoreType>(AppContext);
+  const { ndk, saveTopics, forums, saveForums, getBaseRelays } = useContext<UseNostrStoreType>(NostrContext);
   const { t } = useTranslation()
   const { naddr } = useParams();
   const navigate = useNavigate();
@@ -36,39 +41,69 @@ export const NewTopic: () => JSX.Element = () => {
       })
     }
 
-
     return () => {
       setForumEvent(undefined)
     }
   }, [])
 
   useEffect(() => {
+    console.log(naddr)
     if (forumEvent) {
       setForumTitle(forumEvent?.tagValue("name") ?? forumEvent.tagValue("d"))
+    } else if (naddr === 'all') {
+      setForumTitle(t("pages.forums.list.all.name"))
     }
   }, [forumEvent])
 
+  const getForumRelaySet = (): NDKRelaySet => {
+    let relays: string[] = getBaseRelays()
+
+    if (forumEvent) {
+      forumEvent.onRelays.forEach(r => relays.push(r.url))
+    }
+    if (naddr) {
+      const ref = nip19.decode(naddr)
+      // @ts-expect-error
+      relays = [...relays, ...ref.data?.relays ?? []]
+    }
+
+    return NDKRelaySet.fromRelayUrls(relays, ndk, true)
+  }
+
   const createTopic = async (): Promise<void> => {
     if (naddr && content && title) {
-      const forumTag = filterForEventsTaggingId(naddr)?.['#a']
-      if (forumTag?.[0]) {
-        const topicEvent = new NDKEvent(ndk)
-        topicEvent.kind = 30023
-        topicEvent.content = content
-        await topicEvent.generateTags()
-        topicEvent.tags.push(['a', forumTag?.[0]])
-        topicEvent.tags.push(['title', title])
-        topicEvent.tags.push(['published_at', getUnixTime(new Date()).toString()])
-        topicEvent
-          .publish()
-          .then((result) => {
-            if (result && topicEvent.dTag) {
-              const newNaddr = topicEvent.encode()
-              saveTopics({ [topicEvent.dTag]: topicEvent })
-              navigate(`/topic/${newNaddr}`)
-            }
-          })
+      const topicEvent = new NDKEvent(ndk)
+      topicEvent.kind = 30023
+      topicEvent.content = content
+
+      await topicEvent.generateTags()
+
+      if (naddr !== 'all') {
+        const forumTag = filterForEventsTaggingId(naddr)?.['#a']
+        if (forumTag) topicEvent.tags.push(['a', forumTag[0]])
       }
+
+      topicEvent.tags.push(['title', title])
+      topicEvent.tags.push(['published_at', getUnixTime(new Date()).toString()])
+      topicEvent.tags.push(['L', "ISO-639-1"])
+      topicEvent.tags.push(['l', language.value.split("-")[0], "ISO-639-1"])
+
+      topicEvent
+        .publish(getForumRelaySet())
+        .then((result) => {
+          if (result && topicEvent.dTag) {
+            const newNaddr = topicEvent.encode()
+            saveTopics({ [topicEvent.dTag]: topicEvent })
+            navigate(`/topic/${newNaddr}`)
+          }
+        })
+    }
+  }
+
+  const changeLanguage = (langCode: string): void => {
+    const selected = languages.find((lang) => langCode === lang.value)
+    if (selected) {
+      setLanguage(selected)
     }
   }
 
@@ -118,10 +153,45 @@ export const NewTopic: () => JSX.Element = () => {
                     </Row>
                   </Col>
                   <Col span='22'>
-                    <Row justify="end">
-                      <Button disabled={!content || content === '' || !title || title === ''} type="primary" htmlType="submit" size="large" icon={<NoteAddIcon />} iconPosition="end" onClick={createTopic}>
-                        {t('pages.newTopic.createTopic')}
-                      </Button>
+                    <Row justify="end" align="middle" gutter={[10, 0]}>
+                      <Col>
+                        <ReactCountryFlag
+                          countryCode={language.value.split('-')[1]}
+                          style={{ fontSize: 26 }}
+                        />
+                      </Col>
+                      <Col>
+                        <Select
+                          showSearch
+                          size="large"
+                          style={{ width: 120 }}
+                          onChange={changeLanguage}
+                          defaultValue={language.value}
+                          filterOption={(input, option) =>
+                            (option?.label as string ?? '').toLowerCase().includes(input.toLowerCase())
+                          }
+                          options={languages
+                            .filter((item, index, self) =>
+                              index === self.findIndex((t) => t.label === item.label)
+                            )
+                            .map(lang => {
+                              return { ...lang, label: t(`language.${lang.label}`) }
+                            })}
+                        />
+                      </Col>
+                      <Col>
+                        <Button
+                          disabled={!content || content === '' || !title || title === ''}
+                          type="primary"
+                          htmlType="submit"
+                          size="large"
+                          icon={<NoteAddIcon />}
+                          iconPosition="end"
+                          onClick={createTopic}
+                        >
+                          {t('pages.newTopic.createTopic')}
+                        </Button>
+                      </Col>
                     </Row>
                   </Col>
                 </Row>

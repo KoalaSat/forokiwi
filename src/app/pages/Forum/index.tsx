@@ -1,9 +1,10 @@
-import { Avatar, Breadcrumb, Button, Col, Empty, Row, Skeleton, Table, TableColumnsType, Typography, theme } from "antd";
+import { Avatar, Breadcrumb, Button, Col, Empty, Row, Select, Skeleton, Table, TableColumnsType, Typography, theme } from "antd";
 import SmsIcon from '@mui/icons-material/Sms';
 import MailIcon from '@mui/icons-material/Mail';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import LanguageIcon from '@mui/icons-material/Language';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import Layout, { Content } from "antd/es/layout/layout"
@@ -12,16 +13,19 @@ import { format, formatDistanceToNow, fromUnixTime } from "date-fns";
 import { useNavigate, useParams } from "react-router-dom";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { UseNostrStoreType, NostrContext } from "app/contexts/NostrContext";
-import { NDKEvent, NDKFilter, NDKUser, filterForEventsTaggingId, profileFromEvent } from "@nostr-dev-kit/ndk";
+import { NDKEvent, NDKFilter, NDKRelaySet, NDKUser, filterForEventsTaggingId, profileFromEvent } from "@nostr-dev-kit/ndk";
 import { ActiveUser } from "app/components/ActiveUser";
 import { ForumsButtons } from "app/components/ForumsButtons";
 import { AppContext, UseAppStoreType } from "app/contexts/AppContext";
+import { languages } from "../../../constants";
+import ReactCountryFlag from "react-country-flag";
 
 const { Text, Title, Link } = Typography;
 
 export const Forum: () => JSX.Element = () => {
+  const { topicLanguage, setTopicLanguage } = useContext<UseAppStoreType>(AppContext);
   const { turtleMode } = useContext<UseAppStoreType>(AppContext);
-  const { ndk, authors, saveAuthors, comments, saveComments, reactions, saveReactions, saveTopics, saveForums, forums } = useContext<UseNostrStoreType>(NostrContext);
+  const { ndk, authors, saveAuthors, comments, saveComments, reactions, saveReactions, saveTopics, saveForums, forums, getBaseRelays } = useContext<UseNostrStoreType>(NostrContext);
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -145,7 +149,7 @@ export const Forum: () => JSX.Element = () => {
   useEffect(() => {
     if (naddr && naddr !== 'all') {
       if (forums[naddr]) setForumEvent(forums[naddr])
-      ndk.fetchEvent(naddr, { closeOnEose: true }).then((event) => {
+      ndk.fetchEvent(naddr, { closeOnEose: true }, getForumRelaySet()).then((event) => {
         if (event?.dTag) {
           setForumEvent(event)
           saveForums({ [naddr]: event, [event.dTag]: event })
@@ -176,16 +180,24 @@ export const Forum: () => JSX.Element = () => {
     }
   }, [forumEvent])
 
+  const getForumRelaySet = (): NDKRelaySet => {
+    const relays: string[] = getBaseRelays()
+
+    forumEvent?.onRelays.forEach(r => relays.push(r.url))
+
+    return NDKRelaySet.fromRelayUrls(relays, ndk, true)
+  }
+
   const getLatestComments = (): void => {
     if (turtleMode) return
 
     setLoadingHotTopics(true)
     if (forumEvent) {
-      ndk.fetchEvents({ kinds: [1], '#a': [forumEvent.tagReference()[1]], limit: 10 }, { closeOnEose: true }).then((newEvents) => {
+      ndk.fetchEvents({ kinds: [1], '#a': [forumEvent.tagReference()[1]], limit: 10 }, { closeOnEose: true }, getForumRelaySet()).then((newEvents) => {
         const hotRopicsTags = [...newEvents].map(e => e.tags.find(t => t[0] === 'a' && t[1].startsWith('30023:')))
         const hotTopicD: string[] = hotRopicsTags.map(t => t?.[1].split(':')?.[2] ?? '')
         const uniqueDTags = Array.from(new Set(hotTopicD))
-        ndk.fetchEvents({ kinds: [30023], '#d': uniqueDTags }).then((newEvents) => {
+        ndk.fetchEvents({ kinds: [30023], '#d': uniqueDTags }, {}, getForumRelaySet()).then((newEvents) => {
           setHotTopics(newEvents)
           setLoadingHotTopics(false)
           saveTopics([...newEvents].reduce((accumulator, event) => {
@@ -199,41 +211,42 @@ export const Forum: () => JSX.Element = () => {
     }
   }
 
-  const getTopicEvents = (): void => {
+  const getTopicEvents = (newLang?: string): void => {
     setLoadingPage(true)
     setLoadingAuthors(true)
     setLoadingComments(true)
     setLoadingReactions(true)
-    if (page * pageSize > (topicEvents?.size ?? 0)) {
-      let filters: NDKFilter = { kinds: [30023], limit: pageSize }
 
-      if (topicEvents) {
-        const array = Array.from(topicEvents);
-        const until = array[array.length - 1]?.created_at ?? 0
-        filters.until = until + 1
-      }
+    let filters: NDKFilter = { kinds: [30023], limit: pageSize }
 
-      if (naddr) filters = { ...filters, ...filterForEventsTaggingId(naddr) }
-
-      ndk.fetchEvents(filters, { closeOnEose: true }).then((newEvents) => {
-        setTopicEvents(events => new Set<NDKEvent>([...events ?? [], ...newEvents]))
-        saveTopics([...newEvents].reduce((accumulator, event) => {
-          if (event.dTag) accumulator[event.encode()] = event
-          return accumulator;
-        }, {}))
-        getTopicEventsMeta(newEvents)
-        setLoadingPage(false)
-      })
-        .catch(() => {
-          setLoadingPage(false)
-          setTopicEvents(new Set())
-        })
-    } else {
-      setLoadingPage(false)
-      setLoadingAuthors(false)
-      setLoadingComments(false)
-      setLoadingReactions(false)
+    if (topicEvents && !newLang) {
+      const array = Array.from(topicEvents);
+      const until = array[array.length - 1]?.created_at ?? 0
+      filters.until = until + 1
     }
+
+    if (naddr) filters = { ...filters, ...filterForEventsTaggingId(naddr) }
+    if (newLang) {
+      if (newLang !== 'all') filters = { ...filters, '#l': [(topicLanguage ?? newLang).split("-")[0]] }
+    } else if (topicLanguage !== 'all') {
+      filters = { ...filters, '#l': [(topicLanguage ?? newLang).split("-")[0]] }
+    }
+
+    ndk.fetchEvents(filters, { closeOnEose: true }, getForumRelaySet()).then((newEvents) => {
+      setTopicEvents(events => {
+        return new Set<NDKEvent>(newLang ? newEvents : [...events ?? [], ...newEvents])
+      })
+      saveTopics([...newEvents].reduce((accumulator, event) => {
+        if (event.dTag) accumulator[event.encode()] = event
+        return accumulator;
+      }, {}))
+      getTopicEventsMeta(newEvents)
+      setLoadingPage(false)
+    })
+      .catch(() => {
+        setLoadingPage(false)
+        setTopicEvents(new Set())
+      })
   }
 
   const getModerators = (): void => {
@@ -245,7 +258,7 @@ export const Forum: () => JSX.Element = () => {
         const authors = pets.map(p => p[1])
         if (!turtleMode) {
           ndk
-            .fetchEvents({ kinds: [0], authors }, { closeOnEose: true, groupable: true })
+            .fetchEvents({ kinds: [0], authors }, { closeOnEose: true, groupable: true }, getForumRelaySet())
             .then((eventsList) => {
               const authors = {}
               eventsList.forEach((event) => {
@@ -259,7 +272,7 @@ export const Forum: () => JSX.Element = () => {
         }
         ndk
           // @ts-expect-error
-          .fetchEvents({ kinds: [4550], authors }, { closeOnEose: true })
+          .fetchEvents({ kinds: [4550], authors }, { closeOnEose: true }, getForumRelaySet())
           .then((eventsList) => {
             const eventIds: string[] = []
             if (eventsList) {
@@ -282,7 +295,7 @@ export const Forum: () => JSX.Element = () => {
     const authors: string[] = []
     if (authors.length > 0) {
       ndk
-        .fetchEvents({ kinds: [0], authors }, { closeOnEose: true, groupable: true })
+        .fetchEvents({ kinds: [0], authors }, { closeOnEose: true, groupable: true }, getForumRelaySet())
         .then((eventsList) => {
           const authors = {}
           eventsList.forEach((event) => {
@@ -299,7 +312,7 @@ export const Forum: () => JSX.Element = () => {
         const dTag = event.dTag?.toString()
         if (dTag) {
           ndk
-            .fetchEvents({ kinds: [1, 7], "#a": [`30023:${event.pubkey}:${dTag}`] }, { groupable: true })
+            .fetchEvents({ kinds: [1, 7], "#a": [`30023:${event.pubkey}:${dTag}`] }, { groupable: true }, getForumRelaySet())
             .then((events) => {
               const commList: NDKEvent[] = []
               const reactList: NDKEvent[] = []
@@ -325,13 +338,18 @@ export const Forum: () => JSX.Element = () => {
     }
   }
 
+  const changeTopicLanguage = (value: string): void => {
+    setTopicLanguage(value)
+    getTopicEvents(value)
+  }
+
   return (
     <Content>
       <Row justify='space-between' gutter={[0, 10]}>
         <Col xs={24} md={16}>
           <Row gutter={[0, 10]} >
             <Col span={24}>
-              <Row>
+              <Row justify="space-between">
                 <Breadcrumb
                   items={[
                     {
@@ -343,6 +361,38 @@ export const Forum: () => JSX.Element = () => {
                     },
                   ]}
                 />
+                <Col>
+                  {topicLanguage === 'all' ? (
+                    <LanguageIcon style={{ fontSize: 16, marginRight: 10 }} />
+                  ) : (
+                    <ReactCountryFlag
+                      countryCode={topicLanguage.split('-')[1]}
+                      style={{ fontSize: 16, marginRight: 10 }}
+                    />
+                  )}
+                  <Select
+                    showSearch
+                    style={{ width: 100 }}
+                    size="small"
+                    onChange={changeTopicLanguage}
+                    defaultValue={topicLanguage}
+                    filterOption={(input, option) =>
+                      (option?.label as string ?? '').toLowerCase().includes(input.toLowerCase())
+                    }
+                    options={
+                      [
+                        { value: 'all', label: t('shared.all') },
+                        ...languages
+                          .filter((item, index, self) =>
+                            index === self.findIndex((t) => t.label === item.label)
+                          )
+                          .map(lang => {
+                            return { ...lang, label: t(`language.${lang.label}`) }
+                          }),
+                      ]
+                    }
+                  />
+                </Col>
               </Row>
             </Col>
             <Col span='24'>
@@ -409,7 +459,7 @@ export const Forum: () => JSX.Element = () => {
             <Col xs={0} md={24}>
               <ActiveUser />
             </Col>
-            <Col  xs={0} md={24}>
+            <Col xs={0} md={24}>
               <ForumsButtons />
             </Col>
             <Col span={24}>

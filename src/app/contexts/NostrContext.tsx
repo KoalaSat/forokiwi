@@ -13,6 +13,7 @@ export interface NostrContextProviderProps {
 export interface UseNostrStoreType {
   ndk: NDK
   userProfile?: NDKUserProfile | null
+  getBaseRelays: () => string[]
   authors: Record<string, NDKUserProfile>
   saveAuthors: (authors: Record<string, NDKUserProfile>) => void
   forums: Record<string, NDKEvent>
@@ -27,9 +28,10 @@ export interface UseNostrStoreType {
 
 export const initialNostrContext: UseNostrStoreType = {
   ndk: new NDK({
-    explicitRelayUrls: ["wss://offchain.pub", "wss://nos.lol", "wss://nostr.foro.kiwi"],
+    explicitRelayUrls: ["wss://relay.damus.io", "wss://offchain.pub", "wss://relay.snort.social", "wss://nos.lol", "wss://nostr.wine"],
     clientName: 'https://foro.kiwi'
   }),
+  getBaseRelays: () => [],
   authors: {},
   saveAuthors: () => { },
   forums: {},
@@ -54,10 +56,11 @@ export const NostrContextProvider = ({ children }: NostrContextProviderProps): J
   const [userProfile, setUserProfile] = useState<NDKUserProfile | null>(window.sessionStorage.getItem('profile') ? JSON.parse(window.sessionStorage.getItem('profile') ?? '{}') : undefined)
 
   useEffect(() => {
-    const signer = new NDKNip07Signer()
-    ndk.signer = signer
-    ndk.autoConnectUserRelays = true
-    ndk.connect().then(() => {
+    if (window.nostr) {
+      ndk.signer = new NDKNip07Signer()
+      ndk.autoConnectUserRelays = false
+    }
+    ndk.connect(3000).then(() => {
       ndk.activeUser?.fetchProfile().then((u) => {
         if (u) {
           setUserProfile(u)
@@ -67,12 +70,14 @@ export const NostrContextProvider = ({ children }: NostrContextProviderProps): J
         }
       })
     }).catch(() => {
-      ndk.signer = undefined
-      ndk.connect().then(() => {
-        setUserProfile(null)
-      })
+      setUserProfile(null)
     });
   }, [])
+
+  const getBaseRelays = (): string[] => {
+    const relays = ndk.explicitRelayUrls ?? []
+    return relays
+  }
 
   const saveAuthors = (authors: Record<string, NDKUserProfile>): void => {
     setAuthors((auth) => {
@@ -129,6 +134,7 @@ export const NostrContextProvider = ({ children }: NostrContextProviderProps): J
       value={{
         ndk,
         userProfile,
+        getBaseRelays,
         authors,
         saveAuthors,
         forums,

@@ -1,3 +1,5 @@
+import { languages } from '../../constants';
+import i18n from 'locales/i18n';
 import {
   createContext,
   useState,
@@ -9,11 +11,19 @@ export interface AppContextProviderProps {
 }
 
 export interface UseAppStoreType {
+  language: { value: string, label: string }
+  setLanguage: (language: { value: string, label: string }) => void
+  topicLanguage: string
+  setTopicLanguage: (language: string) => void
   turtleMode: boolean
   setTurtleMode: (turtleMode: boolean) => void
 }
 
 export const initialAppContext: UseAppStoreType = {
+  language: languages[0],
+  setLanguage: () => {},
+  topicLanguage: i18n.language,
+  setTopicLanguage: () => {},
   turtleMode: false,
   setTurtleMode: () => {}
 };
@@ -21,11 +31,17 @@ export const initialAppContext: UseAppStoreType = {
 export const AppContext = createContext<UseAppStoreType>(initialAppContext);
 
 export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.Element => {
+  const [language, setLanguage] = useState<{ value: string, label: string }>(languages.find((lang) => i18n.language === lang.value) ?? initialAppContext.language);
+  const [topicLanguage, setTopicLanguage] = useState<string>('all');
   const [turtleMode, setTurtleMode] = useState<boolean>(initialAppContext.turtleMode);
 
   return (
     <AppContext.Provider
       value={{
+        language,
+        setLanguage,
+        topicLanguage,
+        setTopicLanguage,
         turtleMode,
         setTurtleMode
       }}

@@ -7,7 +7,6 @@ import SportsBasketballIcon from '@mui/icons-material/SportsBasketball';
 import CandlestickChartIcon from '@mui/icons-material/CandlestickChart';
 import LanguageIcon from '@mui/icons-material/Language';
 import TagIcon from '@mui/icons-material/Tag';
-import BugReportIcon from '@mui/icons-material/BugReport';
 import SvgIcon from '@mui/material/SvgIcon';
 import Layout, { Content } from "antd/es/layout/layout"
 import { useState } from "react";
@@ -32,11 +31,6 @@ export const ForumList: () => JSX.Element = () => {
     token: { colorBgContainer, borderRadiusLG, colorPrimary },
   } = theme.useToken();
   const [list] = useState<ListItem[]>([
-    {
-      name: "test",
-      icon: BugReportIcon,
-      naddr: "naddr1qvzqqqyx7cpzq2vefk070du8cswq6gqkuhae57uywnffguglpy8xpdy946auhmpdqydhwumn8ghj7mn0wd68ytnnv968xarjv9kxjcfwvdhk6tcqzp3nzer9wdurjwt2dd5kwmfjxdkqu3yaf0"
-    },
     {
       name: "all",
       icon: TagIcon,

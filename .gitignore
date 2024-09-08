@@ -26,6 +26,5 @@ yarn-error.log*
 .env.production.local
 
 # data
-strfry/db/*
 tor/config/*
 

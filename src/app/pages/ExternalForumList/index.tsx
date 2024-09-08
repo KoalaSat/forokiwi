@@ -1,14 +1,17 @@
-import { Avatar, Breadcrumb, Button, Col, Row, Skeleton, Table, TableColumnsType, Typography, theme } from "antd";
+import { Avatar, Breadcrumb, Button, Col, Row, Select, Skeleton, Table, TableColumnsType, Typography, theme } from "antd";
 import Layout, { Content } from "antd/es/layout/layout"
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import LanguageIcon from '@mui/icons-material/Language';
 import { ForumsButtons } from "app/components/ForumsButtons";
 import { NDKEvent, NDKFilter } from "@nostr-dev-kit/ndk";
 import { UseNostrStoreType, NostrContext } from "app/contexts/NostrContext";
 import { useTranslation } from "react-i18next";
 import { ActiveUser } from "app/components/ActiveUser";
 import { UseAppStoreType, AppContext } from "app/contexts/AppContext";
+import { languages } from "../../../constants";
+import ReactCountryFlag from "react-country-flag";
 
 const { Text, Title } = Typography;
 
@@ -18,7 +21,7 @@ export const ExternalForumList: () => JSX.Element = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
-  const { turtleMode } = useContext<UseAppStoreType>(AppContext);
+  const { turtleMode, topicLanguage, setTopicLanguage } = useContext<UseAppStoreType>(AppContext);
   const { ndk, saveForums } = useContext<UseNostrStoreType>(NostrContext);
   const skeletonList = useMemo(() => new Array(10).fill(new NDKEvent()), [])
   const [externalForums, setExternalForums] = useState<NDKEvent[]>();
@@ -61,32 +64,37 @@ export const ExternalForumList: () => JSX.Element = () => {
     getForumEvents()
   }, [page])
 
-  const getForumEvents = (): void => {
+  const getForumEvents = (newLang?: string): void => {
     setLoadingPage(true)
-    if (page * pageSize > (externalForums?.length ?? 0)) {
-      // @ts-expect-error
-      const filters: NDKFilter = { kinds: [34550], limit: pageSize }
+    // @ts-expect-error
+    let filters: NDKFilter = { kinds: [34550], limit: pageSize }
 
-      if (externalForums) {
-        const array = Array.from(externalForums);
-        const until = array[array.length - 1]?.created_at ?? 0
-        filters.until = until + 1
-      }
-
-      ndk.fetchEvents(filters, { closeOnEose: true }).then((newEvents) => {
-        setExternalForums(events => [...events ?? [], ...newEvents])
-        saveForums([...newEvents].reduce((accumulator, event) => {
-          if (event.dTag) {
-            accumulator[event.encode()] = event
-            accumulator[event.dTag] = event
-          }
-          return accumulator;
-        }, {}))
-        setLoadingPage(false)
-      })
-    } else {
-      setLoadingPage(false)
+    if (externalForums && !newLang) {
+      const array = Array.from(externalForums);
+      const until = array[array.length - 1]?.created_at ?? 0
+      filters.until = until + 1
     }
+
+    if (newLang && newLang !== 'all') filters = { ...filters, '#l': [newLang.split("-")[0]] }
+
+    ndk.fetchEvents(filters, { closeOnEose: true }).then((newEvents) => {
+      setExternalForums(events => {
+        return newLang ? [...newEvents] : [...events ?? [], ...newEvents]
+      })
+      saveForums([...newEvents].reduce((accumulator, event) => {
+        if (event.dTag) {
+          accumulator[event.encode()] = event
+          accumulator[event.dTag] = event
+        }
+        return accumulator;
+      }, {}))
+      setLoadingPage(false)
+    })
+  }
+
+  const changeTopicLanguage = (value: string): void => {
+    setTopicLanguage(value)
+    getForumEvents(value)
   }
 
   return (
@@ -95,7 +103,7 @@ export const ExternalForumList: () => JSX.Element = () => {
         <Col xs={24} md={16}>
           <Row gutter={[0, 10]} >
             <Col span={24}>
-              <Row>
+              <Row justify="space-between">
                 <Breadcrumb
                   items={[
                     {
@@ -107,6 +115,38 @@ export const ExternalForumList: () => JSX.Element = () => {
                     },
                   ]}
                 />
+                <Col>
+                  {topicLanguage === 'all' ? (
+                    <LanguageIcon style={{ fontSize: 16, marginRight: 10 }} />
+                  ) : (
+                    <ReactCountryFlag
+                      countryCode={topicLanguage.split('-')[1]}
+                      style={{ fontSize: 16, marginRight: 10 }}
+                    />
+                  )}
+                  <Select
+                    showSearch
+                    style={{ width: 100 }}
+                    size="small"
+                    onChange={changeTopicLanguage}
+                    defaultValue={topicLanguage}
+                    filterOption={(input, option) =>
+                      (option?.label as string ?? '').toLowerCase().includes(input.toLowerCase())
+                    }
+                    options={
+                      [
+                        { value: 'all', label: t('shared.all') },
+                        ...languages
+                          .filter((item, index, self) =>
+                            index === self.findIndex((t) => t.label === item.label)
+                          )
+                          .map(lang => {
+                            return { ...lang, label: t(`language.${lang.label}`) }
+                          }),
+                      ]
+                    }
+                  />
+                </Col>
               </Row>
             </Col>
             <Col span='24'>
