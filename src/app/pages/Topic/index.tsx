@@ -156,9 +156,7 @@ export const Topic: () => JSX.Element = () => {
   const getForumRelaySet = (): NDKRelaySet => {
     let relays: string[] = getBaseRelays()
 
-    if (forumEvent){
-      forumEvent.onRelays.forEach(r => relays.push(r.url))
-    }
+    if (forumEvent) forumEvent.onRelays.forEach(r => relays.push(r.url))
     if (naddr) {
       const ref = nip19.decode(naddr)
       // @ts-expect-error
@@ -179,6 +177,7 @@ export const Topic: () => JSX.Element = () => {
         if (t[0] === 'a') newComment.tags.push(t)
       })
 
+      if (forumEvent) newComment.tags.push(['a', forumEvent.tagReference()[1]])
       if (replyTo) replyTo.referenceTags().forEach((t) => newComment.tags.push(t))
 
       newComment
