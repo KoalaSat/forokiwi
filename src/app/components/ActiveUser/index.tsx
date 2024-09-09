@@ -4,7 +4,7 @@ import { UseNostrStoreType, NostrContext } from "app/contexts/NostrContext";
 import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-const { Text } = Typography;
+const { Text, Link } = Typography;
 
 export const ActiveUser: () => JSX.Element = () => {
   const { ndk, userProfile } = useContext<UseNostrStoreType>(NostrContext);
@@ -76,6 +76,11 @@ export const ActiveUser: () => JSX.Element = () => {
               <Col span={24}>
                 <Row justify="center">
                   {t(`components.activeUser.tryAlby`)}
+                </Row>
+                <Row justify="center">
+                  <Link href="https://getalby.com/" target="_blank" >
+                    https://getalby.com
+                  </Link>
                 </Row>
               </Col>
             </Row>

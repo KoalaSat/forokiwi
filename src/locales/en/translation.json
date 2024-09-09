@@ -92,7 +92,8 @@
       "code": "Code"
     },
     "activeUser": {
-      "createUser": "Create user"
+      "createUser": "Create user",
+      "tryAlby": "User creation not implemented yet, In the mid-time you can try the Alby extension or any other NIP-07 compatible tool."
     }
   },
   "shared": {
