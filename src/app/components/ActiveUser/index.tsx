@@ -1,7 +1,7 @@
-import { Avatar, Button, Col, Layout, Row, Skeleton, Typography, theme } from "antd";
+import { Avatar, Button, Col, Layout, Modal, Row, Skeleton, Typography, theme } from "antd";
 import PersonIcon from '@mui/icons-material/Person';
 import { UseNostrStoreType, NostrContext } from "app/contexts/NostrContext";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const { Text } = Typography;
@@ -12,6 +12,7 @@ export const ActiveUser: () => JSX.Element = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+  const [openCreateUser, setOpenCreateUser] = useState(false);
 
   return (
     <Layout
@@ -43,7 +44,7 @@ export const ActiveUser: () => JSX.Element = () => {
               <Row>
                 <Col span={24}>
                   <Row justify="center">
-                    <Button type="dashed" size="large" disabled>
+                    <Button type="dashed" size="large" onClick={() => setOpenCreateUser(true)}>
                       {t("components.activeUser.createUser")}
                     </Button>
                   </Row>
@@ -53,8 +54,39 @@ export const ActiveUser: () => JSX.Element = () => {
           }
         </Col>
       </Row>
-
+      <Modal
+        title={t('components.activeUser.createUser')}
+        centered
+        style={modalStyle}
+        open={openCreateUser}
+        onCancel={() => setOpenCreateUser(false)}
+        width={1000}
+        footer={null}
+      >
+        <Row>
+          <Col span={24}>
+            <Row justify="center" gutter={[0, 20]}>
+              <Col span={24}>
+                <Row justify="center">
+                  <Button type="dashed" size="large">
+                    {t(`shared.commingSoon`)}
+                  </Button>
+                </Row>
+              </Col>
+              <Col span={24}>
+                <Row justify="center">
+                  {t(`components.activeUser.tryAlby`)}
+                </Row>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+      </Modal>
     </Layout>
   )
 }
 
+const modalStyle: React.CSSProperties = {
+  margin: 0,
+  height: '500px',
+};

@@ -35,8 +35,8 @@ export const MainHeader: React.FC<MainHeaderProps> = ({ setIsDarkMode, isDarkMod
       <Row justify="space-around">
         <Col span={20}>
           <Row justify="space-between">
-            <Col>
-              <Row align="middle" style={{ height: 60, paddingLeft: 0 }} onClick={() => navigate('/')}>
+            <Col span={16}>
+              <Row align="middle" justify="start" style={{ height: 60, paddingLeft: 0 }} onClick={() => navigate('/')}>
                 <Col>
                   <Text strong style={{ fontFamily: 'Ubuntu', fontSize: 29, color: colorPrimary }}>40</Text>
                   <img src="/assets/kiwi-logo.svg" width={25} style={{ marginTop: -12, marginLeft: 3, transform: 'scaleX(-1)' }} />
@@ -49,34 +49,38 @@ export const MainHeader: React.FC<MainHeaderProps> = ({ setIsDarkMode, isDarkMod
                     <Text type="secondary">{t('components.mainHeader.description')}</Text>
                   </Row>
                 </Col>
-                <Col style={{ marginLeft: 15 }}>
-                  <Row>
+                <Col style={{ marginLeft: 15 }} xs={0} md={8}>
                   <Text strong style={{ fontFamily: 'Ubuntu', fontSize: 29, color: colorPrimary }}>ALPHA</Text>
-                  </Row>
                 </Col>
               </Row>
             </Col>
-            <Col>
-              <Row align="middle" justify="end" style={{ height: 60, paddingRight: 0 }} gutter={[10, 0]}>
-                <Col xs={0} md={12}>
-                  <Tooltip title={t("components.mainHeader.turtleMode")}>
-                    <Switch
-                      checkedChildren={<img src='/assets/nostr-logo.svg' style={{ height: 15, width: 15 }} />}
-                      unCheckedChildren={<img src='/assets/turtle-logo.svg' style={{ height: 20, width: 20 }} />}
-                      value={!turtleMode}
-                      onChange={(value) => setTurtleMode(!value)}
-                    />
-                  </Tooltip>
-                </Col>
-                <Col xs={0} md={12}>
-                  <Button onClick={switchMode}>
-                    {isDarkMode ? <NightlightRoundIcon /> : <Brightness5Icon />}
-                  </Button>
+            <Col span={8}>
+              <Row>
+                <Col xs={0} md={24}>
+                  <Row align="middle" justify="end" style={{ height: 60, paddingRight: 0 }} gutter={[10, 0]}>
+                    <Col>
+                      <Tooltip title={t("components.mainHeader.turtleMode")}>
+                        <Switch
+                          checkedChildren={<img src='/assets/nostr-logo.svg' style={{ height: 15, width: 15 }} />}
+                          unCheckedChildren={<img src='/assets/turtle-logo.svg' style={{ height: 20, width: 20 }} />}
+                          value={!turtleMode}
+                          onChange={(value) => setTurtleMode(!value)}
+                        />
+                      </Tooltip>
+                    </Col>
+                    <Col>
+                      <Button onClick={switchMode}>
+                        {isDarkMode ? <NightlightRoundIcon /> : <Brightness5Icon />}
+                      </Button>
+                    </Col>
+                  </Row>
                 </Col>
                 <Col xs={24} md={0}>
-                  <Button onClick={() => setOpen(true)}>
-                    <MenuIcon />
-                  </Button>
+                  <Row align="middle" justify="end" style={{ height: 60, paddingRight: 0 }}>
+                    <Button onClick={() => setOpen(true)}>
+                      <MenuIcon />
+                    </Button>
+                  </Row>
                 </Col>
               </Row>
             </Col>
@@ -90,6 +94,9 @@ export const MainHeader: React.FC<MainHeaderProps> = ({ setIsDarkMode, isDarkMod
               <Col>
                 <Text strong style={{ fontFamily: 'Ubuntu', fontSize: 29, color: colorPrimary }}>40</Text>
                 <img src="/assets/kiwi-logo.svg" width={25} style={{ marginTop: -12, marginLeft: 3, transform: 'scaleX(-1)' }} />
+              </Col>
+              <Col>
+                <Text strong style={{ fontFamily: 'Ubuntu', fontSize: 29, color: colorPrimary }}>ALPHA</Text>
               </Col>
               <Col>
                 <Row gutter={[10, 10]}>

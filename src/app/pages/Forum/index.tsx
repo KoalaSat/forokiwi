@@ -13,12 +13,13 @@ import { format, formatDistanceToNow, fromUnixTime } from "date-fns";
 import { useNavigate, useParams } from "react-router-dom";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { UseNostrStoreType, NostrContext } from "app/contexts/NostrContext";
-import { NDKEvent, NDKFilter, NDKRelaySet, NDKUser, filterForEventsTaggingId, profileFromEvent } from "@nostr-dev-kit/ndk";
+import { NDKEvent, NDKFilter, NDKRelaySet, NDKUser, profileFromEvent } from "@nostr-dev-kit/ndk";
 import { ActiveUser } from "app/components/ActiveUser";
 import { ForumsButtons } from "app/components/ForumsButtons";
 import { AppContext, UseAppStoreType } from "app/contexts/AppContext";
 import { languages } from "../../../constants";
 import ReactCountryFlag from "react-country-flag";
+import { nip19 } from "nostr-tools";
 
 const { Text, Title, Link } = Typography;
 
@@ -197,7 +198,7 @@ export const Forum: () => JSX.Element = () => {
         const hotRopicsTags = [...newEvents].map(e => e.tags.find(t => t[0] === 'a' && t[1].startsWith('30023:')))
         const hotTopicD: string[] = hotRopicsTags.map(t => t?.[1].split(':')?.[2] ?? '')
         const uniqueDTags = Array.from(new Set(hotTopicD))
-        ndk.fetchEvents({ kinds: [30023], '#d': uniqueDTags }, {}, getForumRelaySet()).then((newEvents) => {
+        ndk.fetchEvents({ kinds: [30023], '#d': uniqueDTags, '#a': [forumEvent.tagReference()[1]] }, {}, getForumRelaySet()).then((newEvents) => {
           setHotTopics(newEvents)
           setLoadingHotTopics(false)
           saveTopics([...newEvents].reduce((accumulator, event) => {
@@ -225,7 +226,11 @@ export const Forum: () => JSX.Element = () => {
       filters.until = until + 1
     }
 
-    if (naddr) filters = { ...filters, ...filterForEventsTaggingId(naddr) }
+    if (naddr && naddr !== 'all') {
+      const data = nip19.decode(naddr).data
+      // @ts-expect-error
+      filters = { ...filters, "#a": [forumEvent?.tagReference()[1] ?? `34550:${data.pubkey}:${data.identifier}`] }
+    }
     if (newLang) {
       if (newLang !== 'all') filters = { ...filters, '#l': [(topicLanguage ?? newLang).split("-")[0]] }
     } else if (topicLanguage !== 'all') {

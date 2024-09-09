@@ -59,6 +59,8 @@ export const NostrContextProvider = ({ children }: NostrContextProviderProps): J
     if (window.nostr) {
       ndk.signer = new NDKNip07Signer()
       ndk.autoConnectUserRelays = false
+    } else {
+      setUserProfile(null)
     }
     ndk.connect(3000).then(() => {
       ndk.activeUser?.fetchProfile().then((u) => {

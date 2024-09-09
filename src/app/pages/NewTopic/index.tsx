@@ -47,7 +47,6 @@ export const NewTopic: () => JSX.Element = () => {
   }, [])
 
   useEffect(() => {
-    console.log(naddr)
     if (forumEvent) {
       setForumTitle(forumEvent?.tagValue("name") ?? forumEvent.tagValue("d"))
     } else if (naddr === 'all') {

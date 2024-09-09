@@ -1,4 +1,4 @@
-import { Avatar, Breadcrumb, Button, Col, Row, Select, Skeleton, Table, TableColumnsType, Typography, theme } from "antd";
+import { Avatar, Breadcrumb, Button, Col, Input, Row, Select, Skeleton, Table, TableColumnsType, Typography, theme } from "antd";
 import Layout, { Content } from "antd/es/layout/layout"
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -14,6 +14,7 @@ import { languages } from "../../../constants";
 import ReactCountryFlag from "react-country-flag";
 
 const { Text, Title } = Typography;
+const { Search } = Input;
 
 export const ExternalForumList: () => JSX.Element = () => {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ export const ExternalForumList: () => JSX.Element = () => {
       render: (_text, record, i) => {
         return (
           <Col span={24}>
-            <Skeleton active loading={!record.id} paragraph={{ rows: 1, width: 300, style: { margin: 0, marginTop: -5 } }} title={{ style: { marginTop: 0 } }}>
+            <Skeleton active loading={!record.id} paragraph={{ rows: 1, style: { margin: 0, marginTop: -5 } }} title={{ style: { marginTop: 0 } }}>
               <Row justify='start'>
                 <Col span={24}>
                   <Row>
@@ -161,6 +162,9 @@ export const ExternalForumList: () => JSX.Element = () => {
                   </Col>
                 </Row>
               </Layout>
+            </Col>
+            <Col span='24'>
+              <Search placeholder="input search text" allowClear disabled/>
             </Col>
             <Layout
               style={{ background: colorBgContainer, borderRadius: borderRadiusLG }}
