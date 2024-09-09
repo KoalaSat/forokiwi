@@ -58,7 +58,7 @@ export const NostrContextProvider = ({ children }: NostrContextProviderProps): J
   useEffect(() => {
     if (window.nostr) {
       ndk.signer = new NDKNip07Signer()
-      ndk.autoConnectUserRelays = false
+      ndk.autoConnectUserRelays = true
     } else {
       setUserProfile(null)
     }
