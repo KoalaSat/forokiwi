@@ -232,9 +232,9 @@ export const Forum: () => JSX.Element = () => {
       filters = { ...filters, "#a": [forumEvent?.tagReference()[1] ?? `34550:${data.pubkey}:${data.identifier}`] }
     }
     if (newLang) {
-      if (newLang !== 'all') filters = { ...filters, '#l': [(topicLanguage ?? newLang).split("-")[0]] }
+      if (newLang !== 'all') filters = { ...filters, '#l': [newLang.split("-")[0]] }
     } else if (topicLanguage !== 'all') {
-      filters = { ...filters, '#l': [(topicLanguage ?? newLang).split("-")[0]] }
+      filters = { ...filters, '#l': [topicLanguage.split("-")[0]] }
     }
 
     ndk.fetchEvents(filters, { closeOnEose: true }, getForumRelaySet()).then((newEvents) => {
