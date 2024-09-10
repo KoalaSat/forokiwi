@@ -7,10 +7,12 @@ import {
 } from 'react';
 
 export interface AppContextProviderProps {
+  isDarkMode: boolean;
   children: ReactNode;
 }
 
 export interface UseAppStoreType {
+  isDarkMode: boolean
   language: { value: string, label: string }
   setLanguage: (language: { value: string, label: string }) => void
   topicLanguage: string
@@ -20,6 +22,7 @@ export interface UseAppStoreType {
 }
 
 export const initialAppContext: UseAppStoreType = {
+  isDarkMode: false,
   language: languages[0],
   setLanguage: () => {},
   topicLanguage: i18n.language,
@@ -30,7 +33,7 @@ export const initialAppContext: UseAppStoreType = {
 
 export const AppContext = createContext<UseAppStoreType>(initialAppContext);
 
-export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.Element => {
+export const AppContextProvider = ({ isDarkMode, children }: AppContextProviderProps): JSX.Element => {
   const [language, setLanguage] = useState<{ value: string, label: string }>(languages.find((lang) => i18n.language === lang.value) ?? initialAppContext.language);
   const [topicLanguage, setTopicLanguage] = useState<string>('all');
   const [turtleMode, setTurtleMode] = useState<boolean>(initialAppContext.turtleMode);
@@ -38,6 +41,7 @@ export const AppContextProvider = ({ children }: AppContextProviderProps): JSX.E
   return (
     <AppContext.Provider
       value={{
+        isDarkMode,
         language,
         setLanguage,
         topicLanguage,

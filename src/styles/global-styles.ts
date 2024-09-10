@@ -1,4 +1,5 @@
 import { createGlobalStyle } from 'styled-components'
+import 'react-mde/lib/styles/css/react-mde-all.css';
 
 export const GlobalStyle = createGlobalStyle`
   @font-face {
@@ -47,4 +48,27 @@ export const GlobalStyle = createGlobalStyle`
       border-radius: 4px; /* Optional: rounded corners for inline code */
   }
 
+  .mde-box {
+    border-width: 0;
+  }
+
+  .mde-toolbar {
+    border-width: 0;
+    border-top-right-radius: 6px;
+    border-top-left-radius: 6px;
+  }
+
+  .mde-textarea-dark {
+    color: #fff;
+    border-bottom-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    background: #1f1f1f;
+    border: 1px solid #424242 !important;
+  }
+
+  .mde-textarea-light {
+    border-bottom-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border: 1px solid #d9d9d9 !important;
+  }
 `

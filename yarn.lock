@@ -12122,6 +12122,11 @@ react-markdown@^9.0.1:
     unist-util-visit "^5.0.0"
     vfile "^6.0.0"
 
+react-mde@^11.5.0:
+  version "11.5.0"
+  resolved "https://registry.yarnpkg.com/react-mde/-/react-mde-11.5.0.tgz#3e81a505071aa80287fb23a1c0ce5e8b34c82055"
+  integrity sha512-CH/VK6d+tpVjJ8rTXfh1dDt6GWedTgCU0668p8toqhAc3vy0Lu872O2RKYDSpkUrlbHI08fjUPTl++nExp6gag==
+
 react-refresh@^0.11.0:
   version "0.11.0"
   resolved "https://registry.yarnpkg.com/react-refresh/-/react-refresh-0.11.0.tgz#77198b944733f0f1f1a90e791de4541f9f074046"

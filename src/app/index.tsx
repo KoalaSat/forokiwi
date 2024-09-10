@@ -70,7 +70,7 @@ export const App: () => JSX.Element = () => {
           <meta name='description' content='foro.kiwi' />
         </Helmet>
         <I18nextProvider i18n={i18n}>
-          <AppContextProvider>
+          <AppContextProvider isDarkMode={isDarkMode}>
             <NostrContextProvider>
               <Layout>
                 <Row justify='space-around'>

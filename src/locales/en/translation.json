@@ -10,7 +10,9 @@
     "newTopic": {
       "title": "Title",
       "content": "Content",
-      "createTopic": "Create topic"
+      "createTopic": "Create topic",
+      "editor": "Editor",
+      "preview": "Preview"
     },
     "topic": {
       "quote": "Quote",

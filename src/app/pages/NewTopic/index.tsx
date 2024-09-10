@@ -1,23 +1,24 @@
-import { Breadcrumb, Button, Col, Input, Row, Select, Skeleton, Typography, theme } from "antd";
+import { Breadcrumb, Button, Col, Input, Row, Select, Skeleton, Tabs, Typography, theme } from "antd";
 import Layout, { Content } from "antd/es/layout/layout"
 import { useTranslation } from "react-i18next";
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import { useNavigate, useParams } from "react-router-dom";
-import TextArea from "antd/es/input/TextArea";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { UseNostrStoreType, NostrContext } from "app/contexts/NostrContext";
 import { NDKEvent, NDKRelaySet, filterForEventsTaggingId } from "@nostr-dev-kit/ndk";
 import { getUnixTime } from "date-fns";
 import { ActiveUser } from "app/components/ActiveUser";
 import { nip19 } from "nostr-tools";
+import ReactMde from "react-mde";
 import { AppContext, UseAppStoreType } from "app/contexts/AppContext";
 import ReactCountryFlag from "react-country-flag";
 import { languages } from "../../../constants";
+import { Markdown } from "app/components/Markdown";
 
 const { Title } = Typography;
 
 export const NewTopic: () => JSX.Element = () => {
-  const { language, setLanguage } = useContext<UseAppStoreType>(AppContext);
+  const { language, setLanguage, isDarkMode } = useContext<UseAppStoreType>(AppContext);
   const { ndk, saveTopics, forums, saveForums, getBaseRelays } = useContext<UseNostrStoreType>(NostrContext);
   const { t } = useTranslation()
   const { naddr } = useParams();
@@ -106,6 +107,27 @@ export const NewTopic: () => JSX.Element = () => {
     }
   }
 
+  const editor = (
+    <Row>
+      <Col span={24}>
+        <ReactMde
+          disablePreview
+          classes={{
+            reactMde: 'mde-box',
+            toolbar: 'mde-toolbar',
+            textArea: isDarkMode ? 'mde-textarea-dark' : 'mde-textarea-light'
+          }}
+          value={content}
+          onChange={setContent}
+        />
+      </Col>
+    </Row>
+  )
+
+  const preview = useMemo(() => (
+    <Markdown text={content ?? ''} />
+  ), [content])
+
   return (
     <Content>
       <Row justify='space-between'>
@@ -144,52 +166,68 @@ export const NewTopic: () => JSX.Element = () => {
                     </Row>
                   </Col>
                   <Col span='22'>
-                    <Row>
-                      <Title level={2}>{t('pages.newTopic.content')}</Title>
-                    </Row>
-                    <Row>
-                      <TextArea rows={10} onChange={(v) => setContent(v.target.value)} />
-                    </Row>
+                    <Tabs
+                      defaultActiveKey="editor"
+                      size="large"
+                      items={[
+                        {
+                          key: 'editor',
+                          label: t('pages.newTopic.editor'),
+                          children: editor
+                        },
+                        {
+                          key: '2',
+                          label: t('pages.newTopic.preview'),
+                          children: preview
+                        }
+                      ]}
+                    />
                   </Col>
                   <Col span='22'>
                     <Row justify="end" align="middle" gutter={[10, 0]}>
-                      <Col>
-                        <ReactCountryFlag
-                          countryCode={language.value.split('-')[1]}
-                          style={{ fontSize: 26 }}
-                        />
+                      <Col xs={0} md={2}>
+                        <Row justify="end">
+                          <ReactCountryFlag
+                            countryCode={language.value.split('-')[1]}
+                            style={{ fontSize: 26 }}
+                          />
+                        </Row>
                       </Col>
                       <Col>
-                        <Select
-                          showSearch
-                          size="large"
-                          style={{ width: 120 }}
-                          onChange={changeLanguage}
-                          defaultValue={language.value}
-                          filterOption={(input, option) =>
-                            (option?.label as string ?? '').toLowerCase().includes(input.toLowerCase())
-                          }
-                          options={languages
-                            .filter((item, index, self) =>
-                              index === self.findIndex((t) => t.label === item.label)
-                            )
-                            .map(lang => {
-                              return { ...lang, label: t(`language.${lang.label}`) }
-                            })}
-                        />
-                      </Col>
-                      <Col>
-                        <Button
-                          disabled={!content || content === '' || !title || title === ''}
-                          type="primary"
-                          htmlType="submit"
-                          size="large"
-                          icon={<NoteAddIcon />}
-                          iconPosition="end"
-                          onClick={createTopic}
-                        >
-                          {t('pages.newTopic.createTopic')}
-                        </Button>
+                        <Row justify="space-between" gutter={[10, 0]}>
+                          <Col>
+                            <Select
+                              showSearch
+                              size="large"
+                              style={{ width: 120 }}
+                              onChange={changeLanguage}
+                              defaultValue={language.value}
+                              filterOption={(input, option) =>
+                                (option?.label as string ?? '').toLowerCase().includes(input.toLowerCase())
+                              }
+                              options={languages
+                                .filter((item, index, self) =>
+                                  index === self.findIndex((t) => t.label === item.label)
+                                )
+                                .map(lang => {
+                                  return { ...lang, label: t(`language.${lang.label}`) }
+                                })}
+                            />
+                          </Col>
+                          <Col>
+                            <Button
+                              disabled={!content || content === '' || !title || title === ''}
+                              type="primary"
+                              htmlType="submit"
+                              size="large"
+                              icon={<NoteAddIcon />}
+                              iconPosition="end"
+                              onClick={createTopic}
+                            >
+                              {t('pages.newTopic.createTopic')}
+                            </Button>
+                          </Col>
+                        </Row>
                       </Col>
                     </Row>
                   </Col>
@@ -197,7 +235,7 @@ export const NewTopic: () => JSX.Element = () => {
               </Layout>
             </Col>
           </Row>
-        </Col>
+        </Col >
         <Col xs={0} md='7'>
           <Row gutter={[0, 10]} style={{ marginTop: 32 }} >
             <Col span={24}>
@@ -205,7 +243,7 @@ export const NewTopic: () => JSX.Element = () => {
             </Col>
           </Row>
         </Col>
-      </Row>
-    </Content>
+      </Row >
+    </Content >
   )
 }
