@@ -91,7 +91,8 @@
     },
     "markDown": {
       "identifier": "Go to topic: {{identifier}}",
-      "code": "Code"
+      "code": "Code",
+      "seeNote": "See note"
     },
     "activeUser": {
       "createUser": "Create user",

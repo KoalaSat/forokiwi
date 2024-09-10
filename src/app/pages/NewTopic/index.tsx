@@ -131,7 +131,7 @@ export const NewTopic: () => JSX.Element = () => {
   return (
     <Content>
       <Row justify='space-between'>
-        <Col xs={24} md='16'>
+        <Col xs={24} md={16}>
           <Row gutter={[0, 10]} >
             <Col span={24}>
               <Row>
@@ -236,7 +236,7 @@ export const NewTopic: () => JSX.Element = () => {
             </Col>
           </Row>
         </Col >
-        <Col xs={0} md='7'>
+        <Col xs={0} md={7}>
           <Row gutter={[0, 10]} style={{ marginTop: 32 }} >
             <Col span={24}>
               <ActiveUser />

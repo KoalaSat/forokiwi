@@ -98,6 +98,18 @@ export const Markdown: React.FC<MarkdownProps> = ({ text, dTag, loadingAuthors }
     )
   }
 
+  const noteComponent = (note1: string): JSX.Element => {
+    return (
+      <Layout style={{ background: colorBgLayout, padding: 25, marginBottom: 10, borderLeftColor: colorTextSecondary, borderLeftWidth: 5, borderLeftStyle: 'solid' }}>
+        <Row>
+          <Col>
+            <Link strong href={`https://njump.me/${note1}`} target="_blank">{t('components.markDown.seeNote')}</Link>
+          </Col>
+        </Row>
+      </Layout>
+    )
+  }
+
   const topicComponent = (naddr: string, identifier: string): JSX.Element => {
     if (!identifier || identifier === dTag) return <></>
     return (
@@ -116,6 +128,8 @@ export const Markdown: React.FC<MarkdownProps> = ({ text, dTag, loadingAuthors }
       return mentionComponent(bech32)
     } else if (type === 'nevent') {
       return eventComponent(bech32)
+    } else if (type === 'note1') {
+      return noteComponent(bech32)
     } else if (type === 'naddr') {
       const ref = nip19.decode(bech32)
       // @ts-expect-error
@@ -134,7 +148,7 @@ export const Markdown: React.FC<MarkdownProps> = ({ text, dTag, loadingAuthors }
   const nostrSyntax = (): (tree: any) => void => {
     return (tree) => {
       visit(tree, 'text', (node) => {
-        const regex = /(?:nostr:)?((naddr|nevent|npub|nprofile)[a-zA-Z0-9]+)/g
+        const regex = /(?:nostr:)?((naddr|nevent|npub|nprofile|note1)[a-zA-Z0-9]+)/g
         const match = regex.exec(node.value)
         if (match) {
           node.type = 'root';
