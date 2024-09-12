@@ -70,13 +70,15 @@ export const Markdown: React.FC<MarkdownProps> = ({ text, dTag, loadingAuthors }
     },
   }
 
-  const mentionComponent = (npub: string): JSX.Element => {
-    const user = new NDKUser({ npub })
+  const mentionComponent = (bech32: string): JSX.Element => {
+    // @ts-expect-error
+    const hexpubkey = nip19.decode(bech32)?.data.pubkey
+    const user = new NDKUser({ hexpubkey })
     const profile = authors?.[user.pubkey] ?? user?.profile
     const name: string = profile?.displayName ?? profile?.name ?? t("shared.events.anonymous")
     return loadingAuthors ?
       <Skeleton.Input size="small" active />
-      : <Link strong href={`https://njump.me/${npub}`} target="_blank">{name}</Link>
+      : <Link strong href={`https://njump.me/${user.npub}`} target="_blank">{name}</Link>
   }
 
   const eventComponent = (nevent: string): JSX.Element => {
@@ -148,7 +150,7 @@ export const Markdown: React.FC<MarkdownProps> = ({ text, dTag, loadingAuthors }
   const nostrSyntax = (): (tree: any) => void => {
     return (tree) => {
       visit(tree, 'text', (node) => {
-        const regex = /(?:nostr:)?((naddr|nevent|npub|nprofile|note1)[a-zA-Z0-9]+)/g
+        const regex = /(?:nostr:)?((naddr|nevent|npub|nprofile|note)1[a-zA-Z0-9]+)/g
         const match = regex.exec(node.value)
         if (match) {
           node.type = 'root';

@@ -32,6 +32,7 @@ export const Topic: () => JSX.Element = () => {
   const [topicEvent, setTopicEvent] = useState<NDKEvent>()
   const [rootAuthor, setRootAuthor] = useState<NDKUserProfile | null>()
 
+  const [creatingComment, setCreatingComment] = useState<boolean>(false)
   const [loadingAuthors, setLoadingAuthors] = useState<boolean>(true)
   const [loadingComments, setLoadingComments] = useState<boolean>(true)
   const [loadingReactions, setLoadingReactions] = useState<boolean>(true)
@@ -167,17 +168,19 @@ export const Topic: () => JSX.Element = () => {
   }
 
   const createComment = async (): Promise<void> => {
+    setCreatingComment(true)
     const dTag = topicEvent?.dTag
     if (topicEvent && dTag && naddr && content && content !== '') {
       const newComment = new NDKEvent(ndk)
       newComment.kind = 1
       newComment.content = content
+
       newComment.tags.push(topicEvent.tagReference())
       topicEvent.tags.forEach((t) => {
         if (t[0] === 'a') newComment.tags.push(t)
       })
 
-      if (forumEvent) newComment.tags.push(['a', forumEvent.tagReference()[1]])
+      if (forumEvent?.kind) newComment.tags.push(['a', forumEvent.tagReference()[1]])
       if (replyTo) replyTo.referenceTags().forEach((t) => newComment.tags.push(t))
 
       newComment
@@ -189,6 +192,9 @@ export const Topic: () => JSX.Element = () => {
           setReplyTo(undefined)
           setContent('')
         })
+        .finally(() => setCreatingComment(false))
+    } else {
+      setCreatingComment(false)
     }
   }
 
@@ -405,7 +411,7 @@ export const Topic: () => JSX.Element = () => {
                   </Col>
                   <Col span='22'>
                     <Row justify="end">
-                      <Button onClick={createComment} disabled={!content || content === ''} type="primary" htmlType="submit" size="large" icon={<CommentIcon />} iconPosition="end" >
+                      <Button loading={creatingComment} onClick={createComment} disabled={!content || content === ''} type="primary" htmlType="submit" size="large" icon={<CommentIcon />} iconPosition="end" >
                         {t('pages.topic.createComment')}
                       </Button>
                     </Row>
@@ -416,7 +422,7 @@ export const Topic: () => JSX.Element = () => {
           </Row>
         </Col>
         <Col xs={0} md={7}>
-          <Row gutter={[0, 10]} >
+          <Row gutter={[0, 10]} style={{ marginTop: 32 }}>
             <Col span={24}>
               <ActiveUser />
             </Col>
