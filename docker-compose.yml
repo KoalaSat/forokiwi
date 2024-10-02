@@ -23,15 +23,7 @@ services:
       - /var/www/certbot/:/var/www/certbot/:rw
       - /etc/letsencrypt/:/etc/letsencrypt/:rw
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-  tor:
-    build: ./tor
-    container_name: tor
-    restart: always
-    volumes:
-      - ./tor/config:/var/lib/tor
-      - ./tor/torrc:/etc/tor
-    networks:
-      - nginx
 networks:
   nginx:
     driver: bridge
+    external: true

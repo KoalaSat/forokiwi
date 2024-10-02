@@ -67,8 +67,9 @@ export const ExternalForumList: () => JSX.Element = () => {
 
   const getForumEvents = (newLang?: string): void => {
     setLoadingPage(true)
-    // @ts-expect-error
-    let filters: NDKFilter = { kinds: [34550], limit: pageSize }
+
+    // let filters: NDKFilter = { kinds: [34550, 39000], limit: pageSize }
+    let filters: NDKFilter = { kinds: [39000], limit: pageSize }
 
     if (externalForums && !newLang) {
       const array = Array.from(externalForums);
