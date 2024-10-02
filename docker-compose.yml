@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - '80:80'
+      - '82:80'
       - '443:443'
     restart: always
     volumes:
